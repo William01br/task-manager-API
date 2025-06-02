@@ -2,9 +2,7 @@
   "name": "task-manager-api",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/William01br/task-manager-API.git"
@@ -19,6 +17,7 @@
   "description": "",
   "devDependencies": {
     "@eslint/js": "^9.28.0",
+    "@types/express": "^5.0.2",
     "@types/node": "^22.15.29",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
@@ -26,5 +25,10 @@
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.33.0"
+  },
+  "dependencies": {
+    "@overnightjs/core": "^1.7.6",
+    "body-parser": "^2.2.0",
+    "express": "^5.1.0"
   }
 }
