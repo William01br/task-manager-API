@@ -3,6 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/src/index.js",
+    "start:dev": "ts-node-dev --watch \"src/*.ts\" src/index.ts ",
+    "format": "prettier --check \"*.ts\"",
+    "format:write": "prettier --write \"*.ts\"",
+    "lint": "eslint \"*.ts\" --fix",
+    "lint:fix": "eslint \"*.ts\"",
     "prepare": "husky"
   },
   "repository": {
