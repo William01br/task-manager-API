@@ -28,6 +28,7 @@
     "@eslint/js": "^9.28.0",
     "@types/express": "^5.0.2",
     "@types/module-alias": "^2.0.4",
+    "@types/mongoose": "^5.11.96",
     "@types/node": "^22.15.29",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
@@ -45,6 +46,7 @@
     "body-parser": "^2.2.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "module-alias": "^2.2.3"
+    "module-alias": "^2.2.3",
+    "mongoose": "^8.15.1"
   }
 }
