@@ -7,7 +7,10 @@ import bodyParser from 'body-parser';
 import { Application } from 'express';
 import { TaskController } from './presentation/controllers/TaskController';
 import { container } from 'tsyringe';
-import { errorHandler } from './presentation/middlewares/errors';
+import {
+  errorHandler,
+  NotFoundHandler,
+} from './presentation/middlewares/errors';
 
 export class SetupServer extends Server {
   constructor() {
@@ -32,6 +35,7 @@ export class SetupServer extends Server {
   }
 
   private setupGlobalErrorHandler(): void {
+    this.app.use(NotFoundHandler.bind(this));
     this.app.use(errorHandler.bind(this));
   }
 

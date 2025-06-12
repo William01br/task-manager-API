@@ -34,20 +34,11 @@ export class TaskService implements ITaskService {
   }
 
   async getAll(): Promise<TaskResponseDTO[]> {
-    return new Promise<TaskResponseDTO[]>((resolve) => {
-      setTimeout(() => {
-        resolve([
-          {
-            title: 'title',
-            description: 'description',
-            id: 'id',
-            isDone: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-        ]);
-      }, 0);
-    });
+    const result = await this.taskRepo.findAll();
+
+    const tasksValidated = result.map((task) => this.validateOutput(task));
+
+    return tasksValidated;
   }
 
   async getById(id: string): Promise<TaskResponseDTO> {

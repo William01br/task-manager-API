@@ -6,7 +6,7 @@ import { inject, injectable } from 'tsyringe';
 import { TASK_MODEL } from '@src/di/tokens';
 
 @injectable()
-export class MongooseTaskRepository implements ITaskRepository {
+export class TaskRepository implements ITaskRepository {
   constructor(
     @inject(TASK_MODEL)
     private readonly taskModel: Model<ITaskDocument>,

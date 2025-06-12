@@ -7,7 +7,7 @@ import { Task } from '@src/domain/entities/Task';
 
 export interface ITaskRepository {
   create(task: Task): Promise<ITaskDocument>;
-  findById(id: string): Promise<Task | null>;
-  findAll(): Promise<Task[]>;
+  findById(id: string): Promise<ITaskDocument | null>;
+  findAll(): Promise<ITaskDocument[]>;
   delete(id: string): Promise<boolean>;
 }
