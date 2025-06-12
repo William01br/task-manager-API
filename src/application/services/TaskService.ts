@@ -7,6 +7,7 @@ import {
 import { ITaskService } from './ITaskService';
 import { inject, injectable } from 'tsyringe';
 import { TASK_REPOSITORY } from '@src/di/tokens';
+import { ITaskDocument } from '@src/infra/database/mongoose/models/TaskModel';
 
 // Aqui declaramos os casos de uso. Além disso, usamos de DIP para servir uma fábrica de objeto - nesse caso, uma simples que cria apenas Task - para validar e retornar o objeto.
 
@@ -27,22 +28,9 @@ export class TaskService implements ITaskService {
 
     const result = await this.taskRepo.create(inputValidate);
 
-    const taskOutput = {
-      id: result._id,
-      title: result.title,
-      description: result.description,
-      isDone: result.isDone,
-      createdAt: result.createdAt,
-      updatedAt: result.updatedAt,
-    };
+    const validateOutput = this.validateOutput(result);
 
-    const outputValidate = TaskResponseSchema.safeParse(taskOutput);
-    if (!outputValidate.success)
-      throw new Error('Zod Validation Error', {
-        cause: outputValidate.error.issues,
-      });
-
-    return outputValidate.data;
+    return validateOutput;
   }
 
   async getAll(): Promise<TaskResponseDTO[]> {
@@ -80,5 +68,19 @@ export class TaskService implements ITaskService {
 
   async delete(id: string): Promise<void> {
     await this.taskRepo.delete(id);
+  }
+
+  private validateOutput(data: ITaskDocument): TaskResponseDTO {
+    const task = {
+      id: data._id,
+      title: data.title,
+      description: data.description,
+      isDone: data.isDone,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+
+    const outputValidate = TaskResponseSchema.parse(task);
+    return outputValidate;
   }
 }

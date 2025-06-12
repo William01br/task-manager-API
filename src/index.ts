@@ -1,4 +1,15 @@
+import { connectToMongoose } from './config/database';
 import { SetupServer } from './server';
 
-const server = new SetupServer();
-server.init();
+async function boostrap(): Promise<void> {
+  const server = new SetupServer();
+  try {
+    server.init();
+    server.start();
+    await connectToMongoose();
+  } catch (error) {
+    console.error('Error starting the application:', error);
+    process.exit(1);
+  }
+}
+void boostrap();

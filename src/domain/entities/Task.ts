@@ -1,18 +1,12 @@
 // Representa a entidade "Task" de forma pura, com seus atributos e eventuais métodos que implementem regras de negócio.
 
 export class Task {
-  constructor(
-    public readonly id: string,
-    public title: string,
-    public description: string,
-    public isDone: boolean = false,
-  ) {}
-
-  public markDone(): void {
-    this.isDone = true;
-  }
-
-  public markPending(): void {
-    this.isDone = false;
+  public title: string;
+  public description: string;
+  public isDone: boolean;
+  constructor(data: { title: string; description: string; isDone: boolean }) {
+    this.title = data.title;
+    this.description = data.description;
+    this.isDone = data.isDone;
   }
 }

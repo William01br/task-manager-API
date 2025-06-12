@@ -30,6 +30,10 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-unsafe-assignment': 'error',
       '@typescript-eslint/only-throw-error': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_' },
+      ],
     },
   },
   eslintConfigPrettier,

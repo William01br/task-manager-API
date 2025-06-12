@@ -20,19 +20,14 @@ export class TaskController {
 
   @Post()
   @Middleware(validateBody(TaskCreateSchema))
-  private async add(
+  private async postHandler(
     req: Request<unknown, TaskResponseDTO, CreateTaskDTO>,
     res: Response,
   ): Promise<Response> {
-    try {
-      const { title, description } = req.body;
+    const { title, description } = req.body;
 
-      const task = await this.taskService.create({ title, description });
+    const task = await this.taskService.create({ title, description });
 
-      return res.status(200).json({ data: task });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: error });
-    }
+    return res.status(200).json({ data: task });
   }
 }
