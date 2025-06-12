@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "outDir": "dist",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "resolveJsonModule": false,
+    "alwaysStrict": true,
+    "removeComments": true,
+    "noImplicitReturns": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["./src/*"],
+      "@test/*": ["./test/*"]
+    },
+    "rootDirs": ["./src", "./test"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useUnknownInCatchVariables": true
+  },
+  "include": ["./src/**/*.ts", "./test/**/*.ts"],
+  "exclude": ["/node_modules", "dist"]
+}
