@@ -29,6 +29,7 @@
     "@types/express": "^5.0.2",
     "@types/module-alias": "^2.0.4",
     "@types/mongoose": "^5.11.96",
+    "@types/mongoose-paginate-v2": "^1.6.4",
     "@types/node": "^22.15.29",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
@@ -49,6 +50,7 @@
     "express-async-errors": "^3.1.1",
     "module-alias": "^2.2.3",
     "mongoose": "^8.15.1",
+    "mongoose-paginate-v2": "^1.9.1",
     "reflect-metadata": "^0.2.2",
     "tsyringe": "^4.10.0"
   }

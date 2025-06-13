@@ -1,4 +1,5 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, PaginateModel, Document } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 export interface ITaskDocument extends Document {
   title: string;
@@ -8,7 +9,9 @@ export interface ITaskDocument extends Document {
   updatedAt: Date;
 }
 
-const TaskSchemaMongoose = new Schema<ITaskDocument>(
+export interface ITaskModel extends PaginateModel<ITaskDocument> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
+
+const TaskSchema = new Schema<ITaskDocument>(
   {
     title: { type: String, required: true },
     description: { type: String, default: '' },
@@ -19,4 +22,6 @@ const TaskSchemaMongoose = new Schema<ITaskDocument>(
   },
 );
 
-export const TaskModel = model<ITaskDocument>('Task', TaskSchemaMongoose);
+TaskSchema.plugin(mongoosePaginate);
+
+export const TaskModel = model<ITaskDocument, ITaskModel>('Task', TaskSchema);

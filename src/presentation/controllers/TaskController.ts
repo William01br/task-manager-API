@@ -10,7 +10,7 @@ import { inject, injectable } from 'tsyringe';
 import { TASK_SERVICE } from '@src/di/tokens';
 
 @injectable()
-@Controller('api/tasks/')
+@Controller('api/tasks')
 export class TaskController {
   constructor(
     @inject(TASK_SERVICE)
@@ -30,9 +30,10 @@ export class TaskController {
     return res.status(200).json({ data: task });
   }
 
-  @Get()
+  @Get(':page/:limit')
   private async getHandler(req: Request, res: Response): Promise<Response> {
-    const tasks = await this.taskService.getAll();
+    const { page, limit } = req.params;
+    const tasks = await this.taskService.getAll(Number(page), Number(limit));
 
     return res.status(200).json({ data: tasks });
   }

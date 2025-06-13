@@ -8,6 +8,8 @@ import { ITaskService } from './ITaskService';
 import { inject, injectable } from 'tsyringe';
 import { TASK_REPOSITORY } from '@src/di/tokens';
 import { ITaskDocument } from '@src/infra/database/mongoose/models/TaskModel';
+import { PaginateResult } from 'mongoose';
+import { Task } from '@src/domain/entities/Task';
 
 // Aqui declaramos os casos de uso. Além disso, usamos de DIP para servir uma fábrica de objeto - nesse caso, uma simples que cria apenas Task - para validar e retornar o objeto.
 
@@ -19,26 +21,38 @@ export class TaskService implements ITaskService {
   ) {}
 
   async create(data: CreateTaskDTO): Promise<TaskResponseDTO> {
-    const inputValidate = {
+    const inputValidate: Task = {
       ...data,
       ...{
         isDone: false,
       },
     };
 
-    const result = await this.taskRepo.create(inputValidate);
+    const result: ITaskDocument = await this.taskRepo.create(inputValidate);
 
-    const validateOutput = this.validateOutput(result);
+    const validateOutput: TaskResponseDTO = this.validateOutput(result);
 
     return validateOutput;
   }
 
-  async getAll(): Promise<TaskResponseDTO[]> {
-    const result = await this.taskRepo.findAll();
+  async getAll(
+    page: number,
+    limit: number,
+  ): Promise<PaginateResult<TaskResponseDTO>> {
+    const result = await this.taskRepo.findAll(page, limit);
 
-    const tasksValidated = result.map((task) => this.validateOutput(task));
+    const tasksValidated: TaskResponseDTO[] = result.docs.map((task) =>
+      this.validateOutput(task),
+    );
 
-    return tasksValidated;
+    const { docs: _, ...rest } = result; // eslint-disable-line @typescript-eslint/no-unused-vars
+
+    const newResult: PaginateResult<TaskResponseDTO> = {
+      ...rest,
+      docs: tasksValidated,
+    };
+
+    return newResult;
   }
 
   async getById(id: string): Promise<TaskResponseDTO> {
