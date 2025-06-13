@@ -56,8 +56,6 @@ export class TaskService implements ITaskService {
   }
 
   async getById(id: string): Promise<TaskResponseDTO | null> {
-    console.log(id, typeof id);
-
     const task = await this.taskRepo.findById(id);
     if (!task) return null;
 

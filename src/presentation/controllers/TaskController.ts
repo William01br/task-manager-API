@@ -8,6 +8,8 @@ import { validateBody } from '../middlewares/zodMiddlewareFactory';
 import { ITaskService } from '@src/application/services/ITaskService';
 import { inject, injectable } from 'tsyringe';
 import { TASK_SERVICE } from '@src/di/tokens';
+import { validateParam } from '../middlewares/validateParamMiddleware';
+import { idSchema } from '@src/application/schemas/IdSchema';
 
 @injectable()
 @Controller('api/tasks')
@@ -42,6 +44,7 @@ export class TaskController {
   }
 
   @Get(':id')
+  @Middleware(validateParam('id', idSchema))
   private async getHandler(
     req: Request<{ id: string }>,
     res: Response,
