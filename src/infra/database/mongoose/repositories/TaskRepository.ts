@@ -1,15 +1,15 @@
 import { ITaskRepository } from './ITaskRepository';
 import { Task } from '@src/domain/entities/Task';
-import { ITaskDocument } from '../models/TaskModel';
-import { Model } from 'mongoose';
+import { ITaskDocument, ITaskModel } from '../models/TaskModel';
 import { inject, injectable } from 'tsyringe';
 import { TASK_MODEL } from '@src/di/tokens';
+import { PaginateOptions, PaginateResult } from 'mongoose';
 
 @injectable()
-export class MongooseTaskRepository implements ITaskRepository {
+export class TaskRepository implements ITaskRepository {
   constructor(
     @inject(TASK_MODEL)
-    private readonly taskModel: Model<ITaskDocument>,
+    private readonly taskModel: ITaskModel,
   ) {}
 
   async create(task: Task): Promise<ITaskDocument> {
@@ -22,8 +22,15 @@ export class MongooseTaskRepository implements ITaskRepository {
     return result;
   }
 
-  async findAll(): Promise<ITaskDocument[]> {
-    const result = await this.taskModel.find();
+  async findAll(
+    page: number,
+    limit: number,
+  ): Promise<PaginateResult<ITaskDocument>> {
+    const options: PaginateOptions = { page, limit };
+    const result: PaginateResult<ITaskDocument> = await this.taskModel.paginate(
+      {},
+      options,
+    );
     return result;
   }
 

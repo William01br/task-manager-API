@@ -1,5 +1,6 @@
 import { ITaskDocument } from '@src/infra/database/mongoose/models/TaskModel';
 import { Task } from '@src/domain/entities/Task';
+import { PaginateResult } from 'mongoose';
 
 // Define uma interface (contrato) para todas as operações de acesso a dados relacionados a "Task".
 
@@ -7,7 +8,7 @@ import { Task } from '@src/domain/entities/Task';
 
 export interface ITaskRepository {
   create(task: Task): Promise<ITaskDocument>;
-  findById(id: string): Promise<Task | null>;
-  findAll(): Promise<Task[]>;
+  findById(id: string): Promise<ITaskDocument | null>;
+  findAll(page: number, limit: number): Promise<PaginateResult<ITaskDocument>>;
   delete(id: string): Promise<boolean>;
 }

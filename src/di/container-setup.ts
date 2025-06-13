@@ -4,7 +4,7 @@ import { TaskService } from '@src/application/services/TaskService';
 import { ITaskRepository } from '@src/infra/database/mongoose/repositories/ITaskRepository';
 import { ITaskDocument } from '@src/infra/database/mongoose/models/TaskModel';
 import { TaskModel } from '@src/infra/database/mongoose/models/TaskModel';
-import { MongooseTaskRepository } from '@src/infra/database/mongoose/repositories/MongoTaskRepository';
+import { TaskRepository } from '@src/infra/database/mongoose/repositories/TaskRepository';
 import { ITaskService } from '@src/application/services/ITaskService';
 import { Model } from 'mongoose';
 
@@ -13,7 +13,7 @@ container.register<ITaskService>(TASK_SERVICE, {
 });
 
 container.register<ITaskRepository>(TASK_REPOSITORY, {
-  useClass: MongooseTaskRepository,
+  useClass: TaskRepository,
 });
 
 container.register<Model<ITaskDocument>>(TASK_MODEL, {

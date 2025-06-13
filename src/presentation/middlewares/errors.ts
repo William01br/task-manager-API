@@ -29,3 +29,8 @@ export const errorHandler = (
   res.status(500).json({ errors: [{ message: 'Something went wrong' }] });
   return;
 };
+
+export const NotFoundHandler = (req: Request, res: Response) => {
+  res.status(404).json({ errors: [{ message: 'Not Found' }] });
+  return;
+};
