@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Controller, Get, Middleware, Post } from '@overnightjs/core';
+import { Controller, Delete, Get, Middleware, Post } from '@overnightjs/core';
 import {
   CreateTaskDTO,
   TaskCreateSchema,
@@ -54,5 +54,18 @@ export class TaskController {
     const task = await this.taskService.getById(id);
 
     return res.status(200).json({ data: task });
+  }
+
+  @Delete(':id')
+  @Middleware(validateParam('id', idSchema))
+  private async deleteHandler(
+    req: Request<{ id: string }>,
+    res: Response,
+  ): Promise<Response> {
+    const id = req.params.id;
+
+    await this.taskService.delete(id);
+
+    return res.status(204).send();
   }
 }

@@ -10,5 +10,5 @@ export interface ITaskRepository {
   create(task: Task): Promise<ITaskDocument>;
   findById(id: string): Promise<ITaskDocument | null>;
   findAll(page: number, limit: number): Promise<PaginateResult<ITaskDocument>>;
-  delete(id: string): Promise<boolean>;
+  delete(id: string): Promise<void>;
 }

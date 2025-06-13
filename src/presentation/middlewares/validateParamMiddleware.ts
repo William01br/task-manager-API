@@ -18,7 +18,6 @@ export function validateParam(paramName: string, schema: ZodTypeAny) {
       });
     }
 
-    req.params[paramName] = result.data;
     next();
     return;
   };

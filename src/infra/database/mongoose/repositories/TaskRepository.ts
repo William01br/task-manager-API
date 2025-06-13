@@ -34,8 +34,7 @@ export class TaskRepository implements ITaskRepository {
     return result;
   }
 
-  async delete(id: string): Promise<boolean> {
-    const result = await this.taskModel.deleteOne({ _id: id });
-    return result.deletedCount === 1;
+  async delete(id: string): Promise<void> {
+    await this.taskModel.deleteOne({ _id: id });
   }
 }
