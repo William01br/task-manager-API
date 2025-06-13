@@ -55,20 +55,13 @@ export class TaskService implements ITaskService {
     return newResult;
   }
 
-  async getById(id: string): Promise<TaskResponseDTO> {
-    console.log(id);
-    return new Promise<TaskResponseDTO>((resolve) => {
-      setTimeout(() => {
-        resolve({
-          title: 'title',
-          description: 'description',
-          id: 'id',
-          isDone: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-      }, 0);
-    });
+  async getById(id: string): Promise<TaskResponseDTO | null> {
+    const task = await this.taskRepo.findById(id);
+    if (!task) return null;
+
+    const taskValidated = this.validateOutput(task);
+
+    return taskValidated;
   }
 
   async delete(id: string): Promise<void> {
