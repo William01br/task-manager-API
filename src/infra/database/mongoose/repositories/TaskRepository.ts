@@ -18,7 +18,7 @@ export class TaskRepository implements ITaskRepository {
   }
 
   async findById(id: string): Promise<ITaskDocument | null> {
-    const result = await this.taskModel.findById({ _id: id });
+    const result = await this.taskModel.findById(id);
     return result;
   }
 
