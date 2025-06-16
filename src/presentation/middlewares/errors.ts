@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { CustomError } from '@src/errors/CustomError';
+import { NotFoundError } from '@src/errors/NotFoundError';
 
 export const errorHandler = (
   err: Error,
@@ -30,7 +31,8 @@ export const errorHandler = (
   return;
 };
 
-export const NotFoundHandler = (req: Request, res: Response) => {
-  res.status(404).json({ errors: [{ message: 'Not Found' }] });
-  return;
+export const NotFoundHandler = () => {
+  throw new NotFoundError({
+    message: 'Not found',
+  });
 };

@@ -10,6 +10,7 @@ import { TASK_REPOSITORY } from '@src/di/tokens';
 import { ITaskDocument } from '@src/infra/database/mongoose/models/TaskModel';
 import { PaginateResult } from 'mongoose';
 import { Task } from '@src/domain/entities/Task';
+import { NotFoundError } from '@src/errors/NotFoundError';
 
 // Aqui declaramos os casos de uso. Além disso, usamos de DIP para servir uma fábrica de objeto - nesse caso, uma simples que cria apenas Task - para validar e retornar o objeto.
 
@@ -41,6 +42,8 @@ export class TaskService implements ITaskService {
   ): Promise<PaginateResult<TaskResponseDTO>> {
     const result = await this.taskRepo.findAll(page, limit);
 
+    this.pageIsValid(result.totalPages, page);
+
     const tasksValidated: TaskResponseDTO[] = result.docs.map((task) =>
       this.validateOutput(task),
     );
@@ -57,7 +60,11 @@ export class TaskService implements ITaskService {
 
   async getById(id: string): Promise<TaskResponseDTO | null> {
     const task = await this.taskRepo.findById(id);
-    if (!task) return null;
+    if (!task)
+      throw new NotFoundError({
+        message: `Resource with id ${id} not found`,
+        logging: true,
+      });
 
     const taskValidated = this.validateOutput(task);
 
@@ -80,5 +87,12 @@ export class TaskService implements ITaskService {
 
     const outputValidate = TaskResponseSchema.parse(task);
     return outputValidate;
+  }
+
+  private pageIsValid(totalPages: number, page: number): void {
+    if (page > totalPages)
+      throw new NotFoundError({
+        message: `Page ${page} not found. Total of pages is ${totalPages}`,
+      });
   }
 }

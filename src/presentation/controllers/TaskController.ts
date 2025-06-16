@@ -10,6 +10,8 @@ import { inject, injectable } from 'tsyringe';
 import { TASK_SERVICE } from '@src/di/tokens';
 import { validateParam } from '../middlewares/validateParamMiddleware';
 import { idSchema } from '@src/application/schemas/IdSchema';
+import { limitSchema } from '@src/application/schemas/LimitSchema';
+import { pageSchema } from '@src/application/schemas/PageSchema';
 
 @injectable()
 @Controller('api/tasks')
@@ -33,6 +35,10 @@ export class TaskController {
   }
 
   @Get(':page/:limit')
+  @Middleware([
+    validateParam('page', pageSchema),
+    validateParam('limit', limitSchema),
+  ])
   private async getAllHandler(
     req: Request<{ page: string; limit: string }>,
     res: Response,
