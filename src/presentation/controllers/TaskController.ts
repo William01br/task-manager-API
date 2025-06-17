@@ -1,5 +1,12 @@
 import { Request, Response } from 'express';
-import { Controller, Delete, Get, Middleware, Post } from '@overnightjs/core';
+import {
+  Controller,
+  Delete,
+  Get,
+  Middleware,
+  Patch,
+  Post,
+} from '@overnightjs/core';
 import {
   CreateTaskDTO,
   TaskCreateSchema,
@@ -12,6 +19,10 @@ import { validateParam } from '../middlewares/validateParamMiddleware';
 import { idSchema } from '@src/application/schemas/IdSchema';
 import { limitSchema } from '@src/application/schemas/LimitSchema';
 import { pageSchema } from '@src/application/schemas/PageSchema';
+import {
+  TaskUpdateSchema,
+  UpdateTaskDTO,
+} from '@src/application/schemas/TaskUpdateSchema';
 
 @injectable()
 @Controller('api/tasks')
@@ -58,6 +69,20 @@ export class TaskController {
     const id = req.params.id;
 
     const task = await this.taskService.getById(id);
+
+    return res.status(200).json({ data: task });
+  }
+
+  @Patch(':id')
+  @Middleware([validateParam('id', idSchema), validateBody(TaskUpdateSchema)])
+  private async updateHandler(
+    req: Request<{ id: string }, unknown, UpdateTaskDTO>,
+    res: Response,
+  ): Promise<Response> {
+    const id = req.params.id;
+    const data = req.body;
+
+    const task = await this.taskService.updateById(id, data);
 
     return res.status(200).json({ data: task });
   }

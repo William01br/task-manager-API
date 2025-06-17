@@ -11,6 +11,7 @@ import { ITaskDocument } from '@src/infra/database/mongoose/models/TaskModel';
 import { PaginateResult } from 'mongoose';
 import { Task } from '@src/domain/entities/Task';
 import { NotFoundError } from '@src/errors/NotFoundError';
+import { UpdateTaskDTO } from '../schemas/TaskUpdateSchema';
 
 // Aqui declaramos os casos de uso. Além disso, usamos de DIP para servir uma fábrica de objeto - nesse caso, uma simples que cria apenas Task - para validar e retornar o objeto.
 
@@ -63,7 +64,18 @@ export class TaskService implements ITaskService {
     if (!task)
       throw new NotFoundError({
         message: `Resource with id ${id} not found`,
-        logging: true,
+      });
+
+    const taskValidated = this.validateOutput(task);
+
+    return taskValidated;
+  }
+
+  async updateById(id: string, data: UpdateTaskDTO): Promise<TaskResponseDTO> {
+    const task = await this.taskRepo.updateById(id, data);
+    if (!task)
+      throw new NotFoundError({
+        message: `Resource with id ${id} not found`,
       });
 
     const taskValidated = this.validateOutput(task);
