@@ -1,5 +1,4 @@
-import { ITaskDocument } from '@src/infra/database/mongoose/models/TaskModel';
-import { Task } from '@src/domain/entities/Task';
+import { Task, TaskPreview } from '@src/domain/entities/Task';
 import { PaginateResult } from 'mongoose';
 import { UpdateTaskDTO } from '@src/application/schemas/TaskUpdateSchema';
 
@@ -8,9 +7,9 @@ import { UpdateTaskDTO } from '@src/application/schemas/TaskUpdateSchema';
 // Ela vai garantir que quem use essa interface, contenha esses métodos, independente da tecnologia (Mongoose | Prisma | TypeORM | In-Memory | etc... )
 
 export interface ITaskRepository {
-  create(task: Task): Promise<ITaskDocument>;
-  findById(id: string): Promise<ITaskDocument | null>;
-  findAll(page: number, limit: number): Promise<PaginateResult<ITaskDocument>>;
-  updateById(id: string, data: UpdateTaskDTO): Promise<ITaskDocument | null>;
+  create(task: TaskPreview): Promise<Task>;
+  findById(id: string): Promise<Task | null>;
+  findAll(page: number, limit: number): Promise<PaginateResult<Task>>;
+  updateById(id: string, data: UpdateTaskDTO): Promise<Task | null>;
   delete(id: string): Promise<void>;
 }
