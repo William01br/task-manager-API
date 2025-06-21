@@ -11,9 +11,11 @@ import {
   TaskPreview,
   TaskResponseDTO,
 } from '@src/domain/entities/Task';
-// import { NotFoundError } from '@src/errors/NotFoundError';
+import { NotFoundError } from '@src/errors/NotFoundError';
 import { ITaskRepository } from '@src/infra/database/mongoose/repositories/ITaskRepository';
 import { ZodError } from 'zod';
+
+const errorDbMsg = 'database failure';
 
 describe('class Task Service', () => {
   let taskRepoMock: jest.Mocked<ITaskRepository>;
@@ -95,13 +97,62 @@ describe('class Task Service', () => {
     });
 
     it('should propagate error when repository.create throws', async () => {
-      const errorMsg = 'database failure';
-      taskRepoMock.create.mockRejectedValue(new Error(errorMsg));
+      taskRepoMock.create.mockRejectedValue(new Error(errorDbMsg));
 
       await expect(taskService.create(mockTaskCreateDTO)).rejects.toThrow(
-        errorMsg,
+        errorDbMsg,
       );
       expect(taskRepoMock.create).toHaveBeenCalledTimes(1);
+      expect(toTaskResponseDTO).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getById', () => {
+    it('should return should return valid taskResponseDTO', async () => {
+      taskRepoMock.findById.mockResolvedValue(mockTask);
+      jest.mocked(toTaskResponseDTO).mockReturnValue(mockTaskResponseExpected);
+
+      const result = await taskService.getById(id);
+
+      expect(taskRepoMock.findById).toHaveBeenCalledTimes(1);
+      expect(taskRepoMock.findById).toHaveBeenCalledWith(id);
+      expect(toTaskResponseDTO).toHaveBeenCalledTimes(1);
+      expect(result).toStrictEqual(mockTaskResponseExpected);
+    });
+    it('should propagate NotFoundError when task does not exist', async () => {
+      taskRepoMock.findById.mockResolvedValue(null);
+
+      await expect(taskService.getById(id)).rejects.toBeInstanceOf(
+        NotFoundError,
+      );
+
+      expect(taskRepoMock.findById).toHaveBeenCalledTimes(1);
+      expect(toTaskResponseDTO).not.toHaveBeenCalled();
+    });
+    it('should propagate ZodError when parse fails', async () => {
+      jest.mocked(toTaskResponseDTO).mockImplementation(() => {
+        throw new ZodError([
+          {
+            code: 'custom',
+            path: ['anyField'],
+            message: 'Erro forçado de teste',
+          },
+        ]);
+      });
+      taskRepoMock.findById.mockResolvedValue(mockTask);
+
+      await expect(taskService.getById(id)).rejects.toBeInstanceOf(ZodError);
+
+      expect(taskRepoMock.findById).toHaveBeenCalledTimes(1);
+      expect(toTaskResponseDTO).toHaveBeenCalledTimes(1);
+    });
+    it('should propagate error when repository.findById throws', async () => {
+      taskRepoMock.findById.mockRejectedValue(new Error(errorDbMsg));
+
+      await expect(taskService.getById(id)).rejects.toThrow(errorDbMsg);
+
+      expect(taskRepoMock.findById).toHaveBeenCalledTimes(1);
+      expect(toTaskResponseDTO).not.toHaveBeenCalled();
     });
   });
 });
