@@ -25,7 +25,8 @@
     "rootDirs": ["./src", "./test"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "useUnknownInCatchVariables": true
+    "useUnknownInCatchVariables": true,
+    "types": ["jest"]
   },
   "include": ["./src/**/*.ts", "./test/**/*.ts"],
   "exclude": ["/node_modules", "dist"]

@@ -1,19 +1,23 @@
 import globals from 'globals';
 import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import tsEslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
+import eslintPluginJest from 'eslint-plugin-jest';
 
-export default tseslint.config(
-  {
-    ignores: ['eslint.config.mjs', 'jest.config.js', 'test/jest.config.js'],
-  },
+export default tsEslint.config(
   eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
+  tsEslint.configs.recommended,
+  tsEslint.configs.strict,
+  tsEslint.configs.stylistic,
   {
+    ignores: ['node_modules/**'],
+  },
+  {
+    files: ['**/*.ts'],
+    // ignores: ['eslint.config.mjs', 'jest.config.js', 'test/jest.config.js'],
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.jest,
       },
       ecmaVersion: 5,
       sourceType: 'module',
@@ -22,9 +26,6 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
-  },
-
-  {
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
@@ -32,8 +33,25 @@ export default tseslint.config(
       '@typescript-eslint/only-throw-error': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
-        { argsIgnorePattern: '^_' },
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+    },
+  },
+  {
+    files: ['**/*.spec.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+        ...eslintPluginJest.environments.globals.globals,
+      },
+    },
+    plugins: { jest: eslintPluginJest },
+    rules: {
+      'jest/no-disabled-tests': 'warn',
+      'jest/no-focused-tests': 'error',
+      'jest/no-identical-title': 'error',
+      'jest/prefer-to-have-length': 'warn',
+      'jest/valid-expect': 'error',
     },
   },
   eslintConfigPrettier,
