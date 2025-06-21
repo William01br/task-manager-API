@@ -1,17 +1,17 @@
 import { ITaskRepository } from '@src/infra/database/mongoose/repositories/ITaskRepository';
-import { CreateTaskDTO } from '../schemas/TaskCreateSchema';
-import {
-  TaskResponseDTO,
-  TaskResponseSchema,
-} from '../schemas/TaskResponseDTO';
 import { ITaskService } from './ITaskService';
 import { inject, injectable } from 'tsyringe';
 import { TASK_REPOSITORY } from '@src/di/tokens';
-import { ITaskDocument } from '@src/infra/database/mongoose/models/TaskModel';
 import { PaginateResult } from 'mongoose';
-import { Task } from '@src/domain/entities/Task';
+import {
+  Task,
+  TaskCreateDTO,
+  TaskPreview,
+  TaskResponseDTO,
+} from '@src/domain/entities/Task';
 import { NotFoundError } from '@src/errors/NotFoundError';
 import { UpdateTaskDTO } from '../schemas/TaskUpdateSchema';
+import { toTaskResponseDTO } from '../mappers/TaskMapper';
 
 // Aqui declaramos os casos de uso. Além disso, usamos de DIP para servir uma fábrica de objeto - nesse caso, uma simples que cria apenas Task - para validar e retornar o objeto.
 
@@ -22,19 +22,17 @@ export class TaskService implements ITaskService {
     private readonly taskRepo: ITaskRepository,
   ) {}
 
-  async create(data: CreateTaskDTO): Promise<TaskResponseDTO> {
-    const inputValidate: Task = {
+  async create(data: TaskCreateDTO): Promise<TaskResponseDTO> {
+    const taskPreview: TaskPreview = {
       ...data,
       ...{
         isDone: false,
       },
     };
 
-    const result: ITaskDocument = await this.taskRepo.create(inputValidate);
+    const task: Task = await this.taskRepo.create(taskPreview);
 
-    const validateOutput: TaskResponseDTO = this.validateOutput(result);
-
-    return validateOutput;
+    return toTaskResponseDTO(task);
   }
 
   async getAll(
@@ -43,13 +41,16 @@ export class TaskService implements ITaskService {
   ): Promise<PaginateResult<TaskResponseDTO>> {
     const result = await this.taskRepo.findAll(page, limit);
 
-    this.pageIsValid(result.totalPages, page);
+    if (page > result.totalPages)
+      throw new NotFoundError({
+        message: `Page ${page} not found. Total of pages is ${result.totalPages}`,
+      });
 
     const tasksValidated: TaskResponseDTO[] = result.docs.map((task) =>
-      this.validateOutput(task),
+      toTaskResponseDTO(task),
     );
 
-    const { docs: _, ...rest } = result; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const { docs: _, ...rest } = result;
 
     const newResult: PaginateResult<TaskResponseDTO> = {
       ...rest,
@@ -66,9 +67,7 @@ export class TaskService implements ITaskService {
         message: `Resource with id ${id} not found`,
       });
 
-    const taskValidated = this.validateOutput(task);
-
-    return taskValidated;
+    return toTaskResponseDTO(task);
   }
 
   async updateById(id: string, data: UpdateTaskDTO): Promise<TaskResponseDTO> {
@@ -78,33 +77,10 @@ export class TaskService implements ITaskService {
         message: `Resource with id ${id} not found`,
       });
 
-    const taskValidated = this.validateOutput(task);
-
-    return taskValidated;
+    return toTaskResponseDTO(task);
   }
 
   async delete(id: string): Promise<void> {
     await this.taskRepo.delete(id);
-  }
-
-  private validateOutput(data: ITaskDocument): TaskResponseDTO {
-    const task = {
-      id: data._id,
-      title: data.title,
-      description: data.description,
-      isDone: data.isDone,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-    };
-
-    const outputValidate = TaskResponseSchema.parse(task);
-    return outputValidate;
-  }
-
-  private pageIsValid(totalPages: number, page: number): void {
-    if (page > totalPages)
-      throw new NotFoundError({
-        message: `Page ${page} not found. Total of pages is ${totalPages}`,
-      });
   }
 }
