@@ -14,9 +14,16 @@ export interface TaskResponseDTO extends Omit<Task, 'createdAt' | 'updatedAt'> {
   updatedAt: string;
 }
 
-export type TaskPreview = Pick<Task, 'title' | 'description' | 'isDone'>;
+export interface TaskPreview {
+  title: string;
+  description: string;
+  readonly isDone: false;
+}
 
-export type TaskCreateDTO = Pick<Task, 'title' | 'description'>;
+export interface TaskCreateDTO {
+  title: string;
+  description: string;
+}
 
 // export type TaskResponseDTO = Pick<
 //   Task,
