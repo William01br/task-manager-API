@@ -9,6 +9,7 @@ import {
   TaskCreateDTO,
   TaskPreview,
   TaskResponseDTO,
+  TaskUpdateDTO,
 } from '@src/domain/entities/Task';
 import { NotFoundError } from '@src/errors/NotFoundError';
 import { ITaskRepository } from '@src/infra/database/mongoose/repositories/ITaskRepository';
@@ -25,6 +26,9 @@ let mockTaskResponseExpected: TaskResponseDTO;
 let mockTask: Task;
 let mockPaginateResult: PaginateResult<TaskResponseDTO>;
 let mockPagineResultTask: PaginateResult<Task>;
+let mockBody: TaskUpdateDTO;
+let mockTaskUpdateExpected: TaskResponseDTO;
+let mockTaskUpdate: Task;
 const errorDbMsg = 'database failure';
 const forcedZodError = new ZodError([
   {
@@ -96,6 +100,19 @@ describe('class Task Service', () => {
         },
       ],
       ...rest,
+    };
+    mockBody = {
+      isDone: true,
+    };
+    const { isDone: __, ...rest1 } = mockTaskResponseExpected;
+    mockTaskUpdateExpected = {
+      ...rest1,
+      isDone: true,
+    };
+    const { isDone: ___, ...task } = mockTask;
+    mockTaskUpdate = {
+      ...task,
+      isDone: true,
     };
   });
 
@@ -193,7 +210,6 @@ describe('class Task Service', () => {
       );
 
       expect(result).toStrictEqual(mockPaginateResult);
-      // CRIAR FACTORIES PARA CRIAR OS OBJETOS. OLHE O ARQUIVO NO OBSIDIAN.
     });
     it('should propagate NotFoundError when page value provided by the client is greater than the totalPage provided by database', async () => {
       taskRepoMock.findAll.mockResolvedValue(mockPagineResultTask);
@@ -222,6 +238,52 @@ describe('class Task Service', () => {
       await expect(taskService.getAll(1, 2)).rejects.toThrow(errorDbMsg);
 
       expect(taskRepoMock.findAll).toHaveBeenCalledTimes(1);
+      expect(toTaskResponseDTO).not.toHaveBeenCalled();
+    });
+  });
+  describe('updateById', () => {
+    it('should update and return valid taskResponseDTO', async () => {
+      taskRepoMock.updateById.mockResolvedValue(mockTaskUpdate);
+      jest.mocked(toTaskResponseDTO).mockReturnValue(mockTaskUpdateExpected);
+
+      const result = await taskService.updateById(id, mockBody);
+
+      expect(taskRepoMock.updateById).toHaveBeenCalledTimes(1);
+      expect(toTaskResponseDTO).toHaveBeenCalledTimes(1);
+
+      expect(result).toStrictEqual(mockTaskUpdateExpected);
+    });
+    it('should propagate NotFoundError when task does not exist', async () => {
+      taskRepoMock.updateById.mockResolvedValue(null);
+
+      await expect(taskService.updateById(id, mockBody)).rejects.toBeInstanceOf(
+        NotFoundError,
+      );
+
+      expect(taskRepoMock.updateById).toHaveBeenCalledTimes(1);
+      expect(toTaskResponseDTO).not.toHaveBeenCalled();
+    });
+    it('should propagate ZodError when parse fails', async () => {
+      jest.mocked(toTaskResponseDTO).mockImplementation(() => {
+        throw forcedZodError;
+      });
+      taskRepoMock.updateById.mockResolvedValue(mockTask);
+
+      await expect(taskService.updateById(id, mockBody)).rejects.toBeInstanceOf(
+        ZodError,
+      );
+
+      expect(taskRepoMock.updateById).toHaveBeenCalledTimes(1);
+      expect(toTaskResponseDTO).toHaveBeenCalledTimes(1);
+    });
+    it('should propagate error when repository.updateById throws', async () => {
+      taskRepoMock.updateById.mockRejectedValue(new Error(errorDbMsg));
+
+      await expect(taskService.updateById(id, mockBody)).rejects.toThrow(
+        errorDbMsg,
+      );
+
+      expect(taskRepoMock.updateById).toHaveBeenCalledTimes(1);
       expect(toTaskResponseDTO).not.toHaveBeenCalled();
     });
   });
