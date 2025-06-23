@@ -25,6 +25,12 @@ export interface TaskCreateDTO {
   description: string;
 }
 
+export interface TaskUpdateDTO {
+  title?: string;
+  description?: string;
+  isDone?: boolean;
+}
+
 // export type TaskResponseDTO = Pick<
 //   Task,
 //   'id' | 'title' | 'description' | 'isDone'>;

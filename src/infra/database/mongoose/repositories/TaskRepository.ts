@@ -1,10 +1,9 @@
 import { ITaskRepository } from './ITaskRepository';
-import { Task, TaskPreview } from '@src/domain/entities/Task';
+import { Task, TaskPreview, TaskUpdateDTO } from '@src/domain/entities/Task';
 import { ITaskDocument, ITaskModel } from '../models/TaskModel';
 import { inject, injectable } from 'tsyringe';
 import { TASK_MODEL } from '@src/di/tokens';
 import { PaginateOptions, PaginateResult } from 'mongoose';
-import { UpdateTaskDTO } from '@src/application/schemas/TaskUpdateSchema';
 
 @injectable()
 export class TaskRepository implements ITaskRepository {
@@ -44,7 +43,7 @@ export class TaskRepository implements ITaskRepository {
     return newResult;
   }
 
-  async updateById(id: string, data: UpdateTaskDTO): Promise<Task | null> {
+  async updateById(id: string, data: TaskUpdateDTO): Promise<Task | null> {
     const result = await this.taskModel.findByIdAndUpdate(
       id,
       { $set: data },

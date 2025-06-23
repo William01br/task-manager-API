@@ -8,9 +8,9 @@ import {
   TaskCreateDTO,
   TaskPreview,
   TaskResponseDTO,
+  TaskUpdateDTO,
 } from '@src/domain/entities/Task';
 import { NotFoundError } from '@src/errors/NotFoundError';
-import { UpdateTaskDTO } from '../schemas/TaskUpdateSchema';
 import { toTaskResponseDTO } from '../mappers/TaskMapper';
 
 // Aqui declaramos os casos de uso. Além disso, usamos de DIP para servir uma fábrica de objeto - nesse caso, uma simples que cria apenas Task - para validar e retornar o objeto.
@@ -70,7 +70,7 @@ export class TaskService implements ITaskService {
     return toTaskResponseDTO(task);
   }
 
-  async updateById(id: string, data: UpdateTaskDTO): Promise<TaskResponseDTO> {
+  async updateById(id: string, data: TaskUpdateDTO): Promise<TaskResponseDTO> {
     const task = await this.taskRepo.updateById(id, data);
     if (!task)
       throw new NotFoundError({
