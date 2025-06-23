@@ -16,11 +16,11 @@ export const errorHandler = (
           {
             code: err.statusCode,
             errors: err.errors,
-            stack: err.stack,
           },
           null,
           2,
         ),
+        err.stack,
       );
     }
     res.status(statusCode).json({ errors });

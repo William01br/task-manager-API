@@ -7,10 +7,7 @@ import {
   Patch,
   Post,
 } from '@overnightjs/core';
-import {
-  CreateTaskDTO,
-  TaskCreateSchema,
-} from '@src/application/schemas/TaskCreateSchema';
+import { TaskCreateSchema } from '@src/application/schemas/TaskCreateSchema';
 import { validateBody } from '../middlewares/zodMiddlewareFactory';
 import { ITaskService } from '@src/application/services/ITaskService';
 import { inject, injectable } from 'tsyringe';
@@ -19,10 +16,8 @@ import { validateParam } from '../middlewares/validateParamMiddleware';
 import { idSchema } from '@src/application/schemas/IdSchema';
 import { limitSchema } from '@src/application/schemas/LimitSchema';
 import { pageSchema } from '@src/application/schemas/PageSchema';
-import {
-  TaskUpdateSchema,
-  UpdateTaskDTO,
-} from '@src/application/schemas/TaskUpdateSchema';
+import { TaskUpdateSchema } from '@src/application/schemas/TaskUpdateSchema';
+import { TaskCreateDTO, TaskUpdateDTO } from '@src/domain/entities/Task';
 
 @injectable()
 @Controller('api/tasks')
@@ -35,7 +30,7 @@ export class TaskController {
   @Post()
   @Middleware(validateBody(TaskCreateSchema))
   private async postHandler(
-    req: Request<unknown, unknown, CreateTaskDTO>,
+    req: Request<unknown, unknown, TaskCreateDTO>,
     res: Response,
   ): Promise<Response> {
     const { title, description } = req.body;
@@ -76,7 +71,7 @@ export class TaskController {
   @Patch(':id')
   @Middleware([validateParam('id', idSchema), validateBody(TaskUpdateSchema)])
   private async updateHandler(
-    req: Request<{ id: string }, unknown, UpdateTaskDTO>,
+    req: Request<{ id: string }, unknown, TaskUpdateDTO>,
     res: Response,
   ): Promise<Response> {
     const id = req.params.id;
