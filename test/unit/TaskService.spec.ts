@@ -3,7 +3,6 @@ jest.mock('@src/application/mappers/TaskMapper', () => ({
 }));
 
 import { toTaskResponseDTO } from '@src/application/mappers/TaskMapper';
-import { StringIdObject } from '@src/application/schemas/IdSchema';
 import { TaskService } from '@src/application/services/TaskService';
 import {
   Task,
@@ -13,20 +12,29 @@ import {
 } from '@src/domain/entities/Task';
 import { NotFoundError } from '@src/errors/NotFoundError';
 import { ITaskRepository } from '@src/infra/database/mongoose/repositories/ITaskRepository';
+import { PaginateResult, Types } from 'mongoose';
 import { ZodError } from 'zod';
 
+let taskRepoMock: jest.Mocked<ITaskRepository>;
+let taskService: TaskService;
+let date: Date;
+let id: string;
+let mockTaskCreateDTO: TaskCreateDTO;
+let mockTaskPreview: TaskPreview;
+let mockTaskResponseExpected: TaskResponseDTO;
+let mockTask: Task;
+let mockPaginateResult: PaginateResult<TaskResponseDTO>;
+let mockPagineResultTask: PaginateResult<Task>;
 const errorDbMsg = 'database failure';
+const forcedZodError = new ZodError([
+  {
+    code: 'custom',
+    path: ['anyField'],
+    message: 'Forced test error',
+  },
+]);
 
 describe('class Task Service', () => {
-  let taskRepoMock: jest.Mocked<ITaskRepository>;
-  let taskService: TaskService;
-  let date: Date;
-  let id: StringIdObject;
-  let mockTaskCreateDTO: TaskCreateDTO;
-  let mockTaskPreview: TaskPreview;
-  let mockTaskResponseExpected: TaskResponseDTO;
-  let mockTask: Task;
-
   beforeEach(() => {
     taskRepoMock = {
       create: jest.fn(),
@@ -39,7 +47,7 @@ describe('class Task Service', () => {
     taskService = new TaskService(taskRepoMock);
 
     date = new Date('2025-06-20T12:34:56.789Z');
-    id = '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d';
+    id = new Types.ObjectId().toHexString();
 
     mockTaskCreateDTO = {
       title: 'test',
@@ -61,6 +69,34 @@ describe('class Task Service', () => {
       createdAt: date.toISOString(),
       updatedAt: date.toISOString(),
     };
+    mockPaginateResult = {
+      totalDocs: 2,
+      limit: 2,
+      totalPages: 1,
+      page: 1,
+      offset: 0,
+      pagingCounter: 1,
+      hasPrevPage: false,
+      hasNextPage: false,
+      prevPage: null,
+      nextPage: null,
+      docs: [
+        {
+          ...mockTaskResponseExpected,
+          ...mockTaskResponseExpected,
+        },
+      ],
+    };
+    const { docs: _, ...rest } = mockPaginateResult;
+    mockPagineResultTask = {
+      docs: [
+        {
+          ...mockTask,
+          ...mockTask,
+        },
+      ],
+      ...rest,
+    };
   });
 
   describe('create', () => {
@@ -78,13 +114,7 @@ describe('class Task Service', () => {
 
     it('should propagate ZodError when parse fails', async () => {
       jest.mocked(toTaskResponseDTO).mockImplementation(() => {
-        throw new ZodError([
-          {
-            code: 'custom',
-            path: ['anyField'],
-            message: 'Erro forçado de teste',
-          },
-        ]);
+        throw forcedZodError;
       });
 
       taskRepoMock.create.mockResolvedValue(mockTask);
@@ -131,13 +161,7 @@ describe('class Task Service', () => {
     });
     it('should propagate ZodError when parse fails', async () => {
       jest.mocked(toTaskResponseDTO).mockImplementation(() => {
-        throw new ZodError([
-          {
-            code: 'custom',
-            path: ['anyField'],
-            message: 'Erro forçado de teste',
-          },
-        ]);
+        throw forcedZodError;
       });
       taskRepoMock.findById.mockResolvedValue(mockTask);
 
@@ -152,6 +176,52 @@ describe('class Task Service', () => {
       await expect(taskService.getById(id)).rejects.toThrow(errorDbMsg);
 
       expect(taskRepoMock.findById).toHaveBeenCalledTimes(1);
+      expect(toTaskResponseDTO).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getAll', () => {
+    it('should return valid taskReponseDTO of type PaginateResult', async () => {
+      taskRepoMock.findAll.mockResolvedValue(mockPagineResultTask);
+      jest.mocked(toTaskResponseDTO).mockReturnValue(mockTaskResponseExpected);
+
+      const result = await taskService.getAll(1, 2);
+
+      expect(taskRepoMock.findAll).toHaveBeenCalledTimes(1);
+      expect(toTaskResponseDTO).toHaveBeenCalledTimes(
+        mockPaginateResult.docs.length,
+      );
+
+      expect(result).toStrictEqual(mockPaginateResult);
+      // CRIAR FACTORIES PARA CRIAR OS OBJETOS. OLHE O ARQUIVO NO OBSIDIAN.
+    });
+    it('should propagate NotFoundError when page value provided by the client is greater than the totalPage provided by database', async () => {
+      taskRepoMock.findAll.mockResolvedValue(mockPagineResultTask);
+
+      await expect(taskService.getAll(10, 2)).rejects.toBeInstanceOf(
+        NotFoundError,
+      );
+
+      expect(taskRepoMock.findAll).toHaveBeenCalledTimes(1);
+      expect(toTaskResponseDTO).not.toHaveBeenCalled();
+    });
+    it('should propagate ZodError when parse fails', async () => {
+      jest.mocked(toTaskResponseDTO).mockImplementation(() => {
+        throw forcedZodError;
+      });
+      taskRepoMock.findAll.mockResolvedValue(mockPagineResultTask);
+
+      await expect(taskService.getAll(1, 2)).rejects.toBeInstanceOf(ZodError);
+
+      expect(taskRepoMock.findAll).toHaveBeenCalledTimes(1);
+      expect(toTaskResponseDTO).toHaveBeenCalledTimes(1);
+    });
+    it('should propagate error when repository.findAll throws', async () => {
+      taskRepoMock.findAll.mockRejectedValue(new Error(errorDbMsg));
+
+      await expect(taskService.getAll(1, 2)).rejects.toThrow(errorDbMsg);
+
+      expect(taskRepoMock.findAll).toHaveBeenCalledTimes(1);
       expect(toTaskResponseDTO).not.toHaveBeenCalled();
     });
   });
