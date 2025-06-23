@@ -39,7 +39,10 @@ export class TaskService implements ITaskService {
     page: number,
     limit: number,
   ): Promise<PaginateResult<TaskResponseDTO>> {
-    const result = await this.taskRepo.findAll(page, limit);
+    const result: PaginateResult<Task> = await this.taskRepo.findAll(
+      page,
+      limit,
+    );
 
     if (page > result.totalPages)
       throw new NotFoundError({
@@ -61,7 +64,7 @@ export class TaskService implements ITaskService {
   }
 
   async getById(id: string): Promise<TaskResponseDTO | null> {
-    const task = await this.taskRepo.findById(id);
+    const task: Task | null = await this.taskRepo.findById(id);
     if (!task)
       throw new NotFoundError({
         message: `Resource with id ${id} not found`,
@@ -71,7 +74,7 @@ export class TaskService implements ITaskService {
   }
 
   async updateById(id: string, data: TaskUpdateDTO): Promise<TaskResponseDTO> {
-    const task = await this.taskRepo.updateById(id, data);
+    const task: Task | null = await this.taskRepo.updateById(id, data);
     if (!task)
       throw new NotFoundError({
         message: `Resource with id ${id} not found`,

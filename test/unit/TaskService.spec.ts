@@ -287,4 +287,20 @@ describe('class Task Service', () => {
       expect(toTaskResponseDTO).not.toHaveBeenCalled();
     });
   });
+  describe('delete', () => {
+    it('should return void when the task was deleted or does not exist', async () => {
+      taskRepoMock.delete.mockResolvedValue();
+
+      await expect(taskService.delete(id)).toBeInstanceOf(Promise<void>);
+
+      expect(taskRepoMock.delete).toHaveBeenCalledTimes(1);
+    });
+    it('should propagate error when repository.delete throws', async () => {
+      taskRepoMock.delete.mockRejectedValue(new Error(errorDbMsg));
+
+      await expect(taskService.delete(id)).rejects.toThrow(errorDbMsg);
+
+      expect(taskRepoMock.delete).toHaveBeenCalledTimes(1);
+    });
+  });
 });
