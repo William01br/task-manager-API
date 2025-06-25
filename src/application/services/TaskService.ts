@@ -44,6 +44,11 @@ export class TaskService implements ITaskService {
       limit,
     );
 
+    if (result.docs.length === 0)
+      throw new NotFoundError({
+        message: 'There are no tasks',
+      });
+
     if (page > result.totalPages)
       throw new NotFoundError({
         message: `Page ${page} not found. Total of pages is ${result.totalPages}`,
