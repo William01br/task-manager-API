@@ -25,6 +25,7 @@ let mockTaskPreview: TaskPreview;
 let mockTaskResponseExpected: TaskResponseDTO;
 let mockTask: Task;
 let mockPaginateResult: PaginateResult<TaskResponseDTO>;
+let mockPaginateDocUndefined: PaginateResult<Task>;
 let mockPagineResultTask: PaginateResult<Task>;
 let mockBody: TaskUpdateDTO;
 let mockTaskUpdateExpected: TaskResponseDTO;
@@ -92,6 +93,13 @@ describe('class Task Service', () => {
       ],
     };
     const { docs: _, ...rest } = mockPaginateResult;
+    mockPaginateDocUndefined = {
+      docs: [],
+      ...rest,
+      ...{
+        totalDocs: 0,
+      },
+    };
     mockPagineResultTask = {
       docs: [
         {
@@ -104,15 +112,15 @@ describe('class Task Service', () => {
     mockBody = {
       isDone: true,
     };
-    const { isDone: __, ...rest1 } = mockTaskResponseExpected;
     mockTaskUpdateExpected = {
-      ...rest1,
-      isDone: true,
+      ...mockTaskResponseExpected,
+      ...{ isDone: true },
     };
-    const { isDone: ___, ...task } = mockTask;
     mockTaskUpdate = {
-      ...task,
-      isDone: true,
+      ...mockTask,
+      ...{
+        isDone: true,
+      },
     };
   });
 
@@ -210,6 +218,13 @@ describe('class Task Service', () => {
       );
 
       expect(result).toStrictEqual(mockPaginateResult);
+    });
+    it('should progagate NotFoundError when totalDocs is null', async () => {
+      taskRepoMock.findAll.mockResolvedValue(mockPaginateDocUndefined);
+
+      await expect(taskService.getAll(1, 2)).rejects.toBeInstanceOf(
+        NotFoundError,
+      );
     });
     it('should propagate NotFoundError when page value provided by the client is greater than the totalPage provided by database', async () => {
       taskRepoMock.findAll.mockResolvedValue(mockPagineResultTask);
