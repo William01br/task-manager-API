@@ -13,6 +13,7 @@ import {
 } from './presentation/middlewares/errors';
 
 export class SetupServer extends Server {
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor() {
     super();
   }
@@ -39,7 +40,7 @@ export class SetupServer extends Server {
     this.app.use(errorHandler.bind(this));
   }
 
-  public start(port: number = 3000) {
+  public start(port = 3000) {
     this.app.listen(port, () => {
       console.log(`Server listening on port: ${port}`);
     });

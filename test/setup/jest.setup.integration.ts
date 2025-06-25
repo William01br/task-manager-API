@@ -3,6 +3,8 @@ import { SetupServer } from '@src/server';
 import { MongoTestContainer } from '@test/utils/MongoTestContainer';
 import supertest from 'supertest';
 
+const SIXTY_SECONDS = 60 * 1000;
+
 let container: MongoTestContainer;
 
 beforeAll(async () => {
@@ -12,7 +14,7 @@ beforeAll(async () => {
   const server = new SetupServer();
   server.init();
   global.testRequest = supertest(server.getApp());
-}, 30000);
+}, SIXTY_SECONDS);
 
 afterAll(async () => {
   await container.closeDatabase();
