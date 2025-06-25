@@ -5,13 +5,14 @@ import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import eslintPluginJest from 'eslint-plugin-jest';
 
 export default tsEslint.config(
+  {
+    ignores: ['node_modules/**', 'jest.config.js', 'jest.setup.js'],
+  },
   eslint.configs.recommended,
   tsEslint.configs.recommended,
   tsEslint.configs.strict,
   tsEslint.configs.stylistic,
-  {
-    ignores: ['node_modules/**'],
-  },
+
   {
     files: ['**/*.ts'],
     // ignores: ['eslint.config.mjs', 'jest.config.js', 'test/jest.config.js'],

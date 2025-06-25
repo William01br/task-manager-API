@@ -1,4 +1,4 @@
 {
   "*.ts": ["eslint --fix", "prettier --write"],
-  "test/unit/*.spec.ts": ["jest --findRelatedTests"]
+  "test/unit/**/*.spec.ts": ["jest --selectProjects unit"]
 }
