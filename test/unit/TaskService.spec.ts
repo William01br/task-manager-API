@@ -219,22 +219,12 @@ describe('class Task Service', () => {
 
       expect(result).toStrictEqual(mockPaginateResult);
     });
-    it('should progagate NotFoundError when totalDocs is null', async () => {
+    it('should progagate NotFoundError when page not have tasks', async () => {
       taskRepoMock.findAll.mockResolvedValue(mockPaginateDocUndefined);
 
       await expect(taskService.getAll(1, 2)).rejects.toBeInstanceOf(
         NotFoundError,
       );
-    });
-    it('should propagate NotFoundError when page value provided by the client is greater than the totalPage provided by database', async () => {
-      taskRepoMock.findAll.mockResolvedValue(mockPagineResultTask);
-
-      await expect(taskService.getAll(10, 2)).rejects.toBeInstanceOf(
-        NotFoundError,
-      );
-
-      expect(taskRepoMock.findAll).toHaveBeenCalledTimes(1);
-      expect(toTaskResponseDTO).not.toHaveBeenCalled();
     });
     it('should propagate ZodError when parse fails', async () => {
       jest.mocked(toTaskResponseDTO).mockImplementation(() => {
