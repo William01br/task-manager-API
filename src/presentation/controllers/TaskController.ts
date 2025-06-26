@@ -1,15 +1,23 @@
 import { Request, Response } from 'express';
-import { Controller, Delete, Get, Middleware, Post } from '@overnightjs/core';
 import {
-  CreateTaskDTO,
-  TaskCreateSchema,
-} from '@src/application/schemas/TaskCreateSchema';
+  Controller,
+  Delete,
+  Get,
+  Middleware,
+  Patch,
+  Post,
+} from '@overnightjs/core';
+import { TaskCreateSchema } from '@src/application/schemas/TaskCreateSchema';
 import { validateBody } from '../middlewares/zodMiddlewareFactory';
 import { ITaskService } from '@src/application/services/ITaskService';
 import { inject, injectable } from 'tsyringe';
 import { TASK_SERVICE } from '@src/di/tokens';
 import { validateParam } from '../middlewares/validateParamMiddleware';
 import { idSchema } from '@src/application/schemas/IdSchema';
+import { limitSchema } from '@src/application/schemas/LimitSchema';
+import { pageSchema } from '@src/application/schemas/PageSchema';
+import { TaskUpdateSchema } from '@src/application/schemas/TaskUpdateSchema';
+import { TaskCreateDTO, TaskUpdateDTO } from '@src/domain/entities/Task';
 
 @injectable()
 @Controller('api/tasks')
@@ -22,7 +30,7 @@ export class TaskController {
   @Post()
   @Middleware(validateBody(TaskCreateSchema))
   private async postHandler(
-    req: Request<unknown, unknown, CreateTaskDTO>,
+    req: Request<unknown, unknown, TaskCreateDTO>,
     res: Response,
   ): Promise<Response> {
     const { title, description } = req.body;
@@ -33,6 +41,10 @@ export class TaskController {
   }
 
   @Get(':page/:limit')
+  @Middleware([
+    validateParam('page', pageSchema),
+    validateParam('limit', limitSchema),
+  ])
   private async getAllHandler(
     req: Request<{ page: string; limit: string }>,
     res: Response,
@@ -52,6 +64,20 @@ export class TaskController {
     const id = req.params.id;
 
     const task = await this.taskService.getById(id);
+
+    return res.status(200).json({ data: task });
+  }
+
+  @Patch(':id')
+  @Middleware([validateParam('id', idSchema), validateBody(TaskUpdateSchema)])
+  private async updateHandler(
+    req: Request<{ id: string }, unknown, TaskUpdateDTO>,
+    res: Response,
+  ): Promise<Response> {
+    const id = req.params.id;
+    const data: TaskUpdateDTO = req.body;
+
+    const task = await this.taskService.updateById(id, data);
 
     return res.status(200).json({ data: task });
   }

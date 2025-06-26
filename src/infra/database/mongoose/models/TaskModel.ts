@@ -1,7 +1,11 @@
-import { Schema, model, PaginateModel, Document } from 'mongoose';
+import { Task } from '@src/domain/entities/Task';
+import { Schema, model, PaginateModel, Document, Types } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
-export interface ITaskDocument extends Document {
+export interface ITaskDocument
+  extends Document,
+    Omit<Task, 'id' | 'createdAt' | 'updatedAt'> {
+  _id: Types.ObjectId;
   title: string;
   description: string;
   isDone: boolean;

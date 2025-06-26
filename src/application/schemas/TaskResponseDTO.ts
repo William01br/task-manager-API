@@ -1,17 +1,11 @@
 import { z } from 'zod';
 import { TaskCreateSchema } from './TaskCreateSchema';
-import { Types } from 'mongoose';
+import { idSchema } from './IdSchema';
 
-export const TaskResponseSchema = TaskCreateSchema.merge(
-  z.object({
-    id: z.preprocess((val) => {
-      if (val instanceof Types.ObjectId) return val.toString();
-      return val;
-    }, z.string()),
-    isDone: z.boolean(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
-  }),
-);
-
-export type TaskResponseDTO = z.infer<typeof TaskResponseSchema>;
+export const TaskResponseSchema = z.object({
+  ...TaskCreateSchema.shape,
+  id: idSchema,
+  isDone: z.boolean(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
