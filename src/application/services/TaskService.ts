@@ -39,33 +39,32 @@ export class TaskService implements ITaskService {
     page: number,
     limit: number,
   ): Promise<PaginateResult<TaskResponseDTO>> {
-    const result: PaginateResult<Task> = await this.taskRepo.findAll(
+    const query: PaginateResult<Task> = await this.taskRepo.findAll(
       page,
       limit,
     );
 
-    if (result.docs.length === 0)
+    if (query.docs.length === 0)
       throw new NotFoundError({
-        message: 'There are no tasks',
+        message: 'Page not found',
+        context: {
+          pageProvided: query.page,
+          totalPages: query.totalPages,
+        },
       });
 
-    if (page > result.totalPages)
-      throw new NotFoundError({
-        message: `Page ${page} not found. Total of pages is ${result.totalPages}`,
-      });
-
-    const tasksValidated: TaskResponseDTO[] = result.docs.map((task) =>
+    const tasksValidated: TaskResponseDTO[] = query.docs.map((task) =>
       toTaskResponseDTO(task),
     );
 
-    const { docs: _, ...rest } = result;
-
-    const newResult: PaginateResult<TaskResponseDTO> = {
-      ...rest,
-      docs: tasksValidated,
+    const result: PaginateResult<TaskResponseDTO> = {
+      ...query,
+      ...{
+        docs: tasksValidated,
+      },
     };
 
-    return newResult;
+    return result;
   }
 
   async getById(id: string): Promise<TaskResponseDTO | null> {
