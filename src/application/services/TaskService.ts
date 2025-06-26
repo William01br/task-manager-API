@@ -71,7 +71,10 @@ export class TaskService implements ITaskService {
     const task: Task | null = await this.taskRepo.findById(id);
     if (!task)
       throw new NotFoundError({
-        message: `Resource with id ${id} not found`,
+        message: `Task not found`,
+        context: {
+          idProvided: id,
+        },
       });
 
     return toTaskResponseDTO(task);
@@ -81,7 +84,10 @@ export class TaskService implements ITaskService {
     const task: Task | null = await this.taskRepo.updateById(id, data);
     if (!task)
       throw new NotFoundError({
-        message: `Resource with id ${id} not found`,
+        message: `Task not found`,
+        context: {
+          idProvided: id,
+        },
       });
 
     return toTaskResponseDTO(task);

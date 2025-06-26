@@ -75,7 +75,7 @@ export class TaskController {
     res: Response,
   ): Promise<Response> {
     const id = req.params.id;
-    const data = req.body;
+    const data: TaskUpdateDTO = req.body;
 
     const task = await this.taskService.updateById(id, data);
 
