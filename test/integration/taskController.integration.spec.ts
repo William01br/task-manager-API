@@ -3,6 +3,7 @@
 
 import { TaskResponseDTO } from '@src/domain/entities/Task';
 import { TaskModel } from '@src/infra/database/mongoose/models/TaskModel';
+import { PaginateResult } from 'mongoose';
 
 describe('TaskController integration tests', () => {
   describe('POST /api/tasks', () => {
@@ -70,13 +71,115 @@ describe('TaskController integration tests', () => {
       });
     });
   });
-  describe('GET /api/tasks/', () => {
-    describe('when the task is return successfully', () => {
-      // it('should return status 200 and an valid paginate taskResponseDTO', async () => {
-      //   const response = await global.testRequest.get('/api/tasks/1/10');
-      //   console.log(response.body);
-      //   expect(response.status).toBe(200);
-      // });
+  describe('GET /api/tasks/:page/:limit', () => {
+    describe('when the tasks is return successfully', () => {
+      it('should return status 200 and an valid paginate response', async () => {
+        await TaskModel.create({
+          title: 'test',
+          description: 'some text',
+          isDone: false,
+        });
+        const { body } = await global.testRequest
+          .get('/api/tasks/1/10')
+          .expect(200);
+
+        console.log(body);
+        const typedBody = body as { data: PaginateResult<TaskResponseDTO> };
+
+        expect(typedBody.data.page).toBe(1);
+        expect(typedBody.data.limit).toBe(10);
+        expect(typedBody.data.totalDocs).toBe(1);
+        expect(typedBody.data.docs[0].title).toBe('test');
+        expect(typeof typedBody.data.docs[0].id).toBe('string');
+      });
+    });
+    describe('when the params are invalids', () => {
+      describe("when the param 'page' haven't tasks", () => {
+        it("should return status 404 e error message 'Page not found'", async () => {
+          const { body } = await global.testRequest
+            .get('/api/tasks/1/10')
+            .expect(404);
+
+          expect(body.errors[0].message).toBe('Page not found');
+        });
+      });
+      describe("when the param 'page' is smaller than 0", () => {
+        it("should return status 400 and message 'The page must be greater than 0'", async () => {
+          const { body } = await global.testRequest
+            .get('/api/tasks/0/10')
+            .expect(400);
+
+          expect(body.errors[0].context.issues[0].message).toBe(
+            'The page must be greater than 0',
+          );
+        });
+      });
+      describe("when the param 'page' is NaN", () => {
+        it("should return status 400 and message 'The page must be a valid number'", async () => {
+          const { body } = await global.testRequest
+            .get('/api/tasks/1j/10')
+            .expect(400);
+
+          expect(body.errors[0].context.issues[0].message).toBe(
+            'The page must be a valid number',
+          );
+        });
+      });
+      describe("when the param 'limit' is greater than 100", () => {
+        it("should return status 400 and message 'The limit should be greater than 0 and not exceed 100'", async () => {
+          const { body } = await global.testRequest
+            .get('/api/tasks/1/101')
+            .expect(400);
+
+          expect(body.errors[0].context.issues[0].message).toBe(
+            'The limit should be greater than 0 and not exceed 100',
+          );
+        });
+      });
+      describe("when the param 'limit' is smaller than 100", () => {
+        it("should return status 400 and message 'The limit should be greater than 0 and not exceed 100'", async () => {
+          const { body } = await global.testRequest
+            .get('/api/tasks/1/0')
+            .expect(400);
+
+          expect(body.errors[0].context.issues[0].message).toBe(
+            'The limit should be greater than 0 and not exceed 100',
+          );
+        });
+      });
+      describe("when the param 'limit' is NaN", () => {
+        it("should return status 400 and message 'The page must be a valid number'", async () => {
+          const { body } = await global.testRequest
+            .get('/api/tasks/1/10O')
+            .expect(400);
+
+          expect(body.errors[0].context.issues[0].message).toBe(
+            'The limit must be a valid number',
+          );
+        });
+      });
+    });
+    describe('when the page provided by client not have tasks', () => {
+      it("should return status 404 and message 'Page not found'", async () => {
+        const { body } = await global.testRequest
+          .get('/api/tasks/1/10')
+          .expect(404);
+
+        expect(body.errors[0].message).toBe('Page not found');
+      });
+    });
+    describe('when occurs any internal error in server', () => {
+      it("should return status 500 and message 'Something went wrong'", async () => {
+        jest
+          .spyOn(TaskModel, 'paginate')
+          .mockRejectedValueOnce(new Error('fail simulation database'));
+
+        const { body } = await global.testRequest
+          .get('/api/tasks/1/10')
+          .expect(500);
+
+        expect(body.errors[0].message).toBe('Something went wrong');
+      });
     });
   });
 });
