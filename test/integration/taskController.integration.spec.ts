@@ -72,27 +72,6 @@ describe('TaskController integration tests', () => {
     });
   });
   describe('GET /api/tasks/:page/:limit', () => {
-    describe('when the tasks is return successfully', () => {
-      it('should return status 200 and an valid paginate response', async () => {
-        await TaskModel.create({
-          title: 'test',
-          description: 'some text',
-          isDone: false,
-        });
-        const { body } = await global.testRequest
-          .get('/api/tasks/1/10')
-          .expect(200);
-
-        console.log(body);
-        const typedBody = body as { data: PaginateResult<TaskResponseDTO> };
-
-        expect(typedBody.data.page).toBe(1);
-        expect(typedBody.data.limit).toBe(10);
-        expect(typedBody.data.totalDocs).toBe(1);
-        expect(typedBody.data.docs[0].title).toBe('test');
-        expect(typeof typedBody.data.docs[0].id).toBe('string');
-      });
-    });
     describe('when the params are invalids', () => {
       describe("when the param 'page' haven't tasks", () => {
         it("should return status 404 e error message 'Page not found'", async () => {
@@ -179,6 +158,27 @@ describe('TaskController integration tests', () => {
           .expect(500);
 
         expect(body.errors[0].message).toBe('Something went wrong');
+      });
+    });
+    describe('when the tasks is return successfully', () => {
+      it('should return status 200 and an valid paginate response', async () => {
+        await TaskModel.create({
+          title: 'test',
+          description: 'some text',
+          isDone: false,
+        });
+        const { body } = await global.testRequest
+          .get('/api/tasks/1/10')
+          .expect(200);
+
+        console.log(body);
+        const typedBody = body as { data: PaginateResult<TaskResponseDTO> };
+
+        expect(typedBody.data.page).toBe(1);
+        expect(typedBody.data.limit).toBe(10);
+        expect(typedBody.data.totalDocs).toBe(1);
+        expect(typedBody.data.docs[0].title).toBe('test');
+        expect(typeof typedBody.data.docs[0].id).toBe('string');
       });
     });
   });
