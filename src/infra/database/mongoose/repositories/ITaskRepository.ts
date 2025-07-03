@@ -10,5 +10,5 @@ export interface ITaskRepository {
   findById(id: string): Promise<Task | null>;
   findAll(page: number, limit: number): Promise<PaginateResult<Task>>;
   updateById(id: string, data: TaskUpdateDTO): Promise<Task | null>;
-  delete(id: string): Promise<void>;
+  delete(id: string): Promise<boolean>;
 }
