@@ -1,6 +1,7 @@
 jest.mock('@src/application/mappers/TaskMapper', () => ({
   toTaskResponseDTO: jest.fn(),
 }));
+jest.mock('ioredis');
 
 import { toTaskResponseDTO } from '@src/application/mappers/TaskMapper';
 import { TaskService } from '@src/application/services/TaskService';
@@ -12,12 +13,16 @@ import {
   TaskUpdateDTO,
 } from '@src/domain/entities/Task';
 import { NotFoundError } from '@src/errors/NotFoundError';
+import { ICacheService } from '@src/infra/cache/redis/ICacheService';
 import { ITaskRepository } from '@src/infra/database/mongoose/repositories/ITaskRepository';
+import Redis from 'ioredis';
 import { PaginateResult, Types } from 'mongoose';
 import { ZodError } from 'zod';
 
 let taskRepoMock: jest.Mocked<ITaskRepository>;
+let mockCacheService: jest.Mocked<ICacheService>;
 let taskService: TaskService;
+let redisInstance: Redis;
 let date: Date;
 let id: string;
 let mockTaskCreateDTO: TaskCreateDTO;
@@ -48,8 +53,20 @@ describe('class Task Service', () => {
       updateById: jest.fn(),
       delete: jest.fn(),
     };
+    mockCacheService = {
+      get: jest.fn(),
+      set: jest.fn(),
+      delete: jest.fn(),
+    };
 
-    taskService = new TaskService(taskRepoMock);
+    jest.spyOn(Redis.prototype, 'smembers').mockResolvedValue([]);
+    redisInstance = new Redis();
+
+    taskService = new TaskService(
+      taskRepoMock,
+      mockCacheService,
+      redisInstance,
+    );
 
     date = new Date('2025-06-20T12:34:56.789Z');
     id = new Types.ObjectId().toHexString();
@@ -207,6 +224,17 @@ describe('class Task Service', () => {
 
   describe('getAll', () => {
     it('should return valid taskReponseDTO of type PaginateResult', async () => {
+      /**
+       * Necessary, since the method 'setPage' is call inside TaskService.findAll and have methods of Redis.
+       */
+      const fakePipeline = {
+        set: jest.fn().mockReturnThis(),
+        sadd: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue([]),
+      };
+      jest
+        .spyOn(Redis.prototype, 'multi')
+        .mockImplementationOnce(() => fakePipeline as any); // eslint-disable-line @typescript-eslint/no-explicit-any
       taskRepoMock.findAll.mockResolvedValue(mockPagineResultTask);
       jest.mocked(toTaskResponseDTO).mockReturnValue(mockTaskResponseExpected);
 
@@ -294,7 +322,7 @@ describe('class Task Service', () => {
   });
   describe('delete', () => {
     it('should return void when the task was deleted or does not exist', async () => {
-      taskRepoMock.delete.mockResolvedValue();
+      taskRepoMock.delete.mockResolvedValue(true);
 
       await expect(taskService.delete(id)).toBeInstanceOf(Promise<void>);
 
