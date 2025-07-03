@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 const schema = z.object({
   ME_CONFIG_MONGODB_URL: z.string().nonempty().url(),
+  ME_CONFIG_REDIS_URL: z.string().nonempty().url(),
 });
 
 const parsed = schema.safeParse(process.env);
