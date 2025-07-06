@@ -27,6 +27,8 @@ const integrationConfig: Config = {
   displayName: 'integration',
   rootDir: root,
   testMatch: ['<rootDir>/test/integration/**/*integration.spec.ts'],
+  globalSetup: '<rootDir>/test/setup/jest.global-setup.ts',
+  globalTeardown: '<rootDir>/test/setup/jest.teardown.ts',
   setupFilesAfterEnv: ['<rootDir>/test/setup/jest.setup.integration.ts'],
   moduleNameMapper: moduleNameMapper,
   collectCoverageFrom: ['<rootDir>/test/integration/**/*integration.spec.ts'],

@@ -1,25 +1,50 @@
 import 'reflect-metadata';
-import { SetupServer } from '@src/server';
-import { MongoTestContainer } from '@test/utils/MongoTestContainer';
+import http from 'node:http';
 import supertest from 'supertest';
+import mongoose from 'mongoose';
+import Redis from 'ioredis';
+
+import { SetupServer } from '@src/server';
+import env from '@src/config/env';
 
 const SIXTY_SECONDS = 60 * 1000;
 
-let container: MongoTestContainer;
+let redis: Redis;
+let mongo: mongoose.Connection;
+let server: SetupServer;
 
 beforeAll(async () => {
-  container = MongoTestContainer.getInstance();
-  await container.connect();
+  try {
+    await mongoose.connect(env.TEST_CONFIG_MONGODB_URL, {
+      directConnection: true,
+    });
+    mongo = mongoose.connection;
 
-  const server = new SetupServer();
-  server.init();
-  global.testRequest = supertest(server.getApp());
+    redis = new Redis(env.TEST_CONFIG_REDIS_URL);
+
+    server = new SetupServer();
+    server.init();
+    global.testRequest = supertest(server.getApp());
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
 }, SIXTY_SECONDS);
 
 afterAll(async () => {
-  await container.closeDatabase();
+  redis.disconnect();
+  await mongo.destroy();
+  http.globalAgent.destroy();
 });
 
 beforeEach(async () => {
-  await container.clearDatabase();
+  await redis.flushdb();
+  await clearMongo();
 });
+
+async function clearMongo(): Promise<void> {
+  const collections = Object.values(mongo.collections);
+  for (const coll of collections) {
+    await coll.deleteMany({});
+  }
+}

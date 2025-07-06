@@ -1,6 +1,11 @@
+import { StartedMongoDBContainer } from '@testcontainers/mongodb';
+import { StartedRedisContainer } from '@testcontainers/redis';
+
+/* eslint-disable no-var*/
 export {};
 
 declare global {
-  // eslint-disable-next-line no-var
   var testRequest: import('supertest/lib/agent');
+  var testContainerMongo: StartedMongoDBContainer;
+  var testContainerRedis: StartedRedisContainer;
 }
