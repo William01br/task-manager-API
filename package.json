@@ -32,6 +32,7 @@
   "devDependencies": {
     "@eslint/js": "^9.28.0",
     "@testcontainers/mongodb": "^11.0.3",
+    "@testcontainers/redis": "^11.0.3",
     "@types/express": "^5.0.2",
     "@types/jest": "^30.0.0",
     "@types/module-alias": "^2.0.4",

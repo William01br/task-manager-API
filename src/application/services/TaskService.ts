@@ -24,6 +24,7 @@ export class TaskService implements ITaskService {
     @inject(CACHE_SERVICE)
     private readonly redis: ICacheService,
 
+    // Here, the Redis instance is used to perform specific operations.
     @inject('Redis')
     private readonly clientRedis: Redis,
   ) {}
@@ -79,13 +80,7 @@ export class TaskService implements ITaskService {
         docs: tasksValidated,
       },
     };
-    /**
-    The strategy for cache invalidation was group-based with Tag-based Invalidation.
 
-    - The invalidation is performed by O(N), where N is the number of keys registered in the tag set.
-    - All pages in cache are deleted imediately.
-    - About scalibility: is necessary care about much pages in cache. - But in this case, was accepted trade-off because is system for one user, since is a Task-Manager.
-     */
     await this.setPage(page, limit, result);
     return result;
   }
@@ -130,13 +125,20 @@ export class TaskService implements ITaskService {
     if (result) await this.deletePages();
   }
 
+  /**
+    The strategy for cache invalidation was group-based with Tag-based Invalidation.
+
+    - The invalidation is performed by O(N), where N is the number of keys registered in the tag set.
+    - All pages in cache are deleted imediately.
+    - About scalibility: is necessary care about much pages in cache. 
+    - In this case, was accepted trade-off because is system for one user, since is a Task-Manager.
+     */
   private async setPage(
     page: number,
     limit: number,
     data: PaginateResult<TaskResponseDTO>,
   ): Promise<void> {
     const key = `tasks:page:${page}:limit:${limit}`;
-    console.log('ESTOU NO SET');
     await this.clientRedis
       .multi()
       .set(key, JSON.stringify(data), 'EX', 60)
@@ -147,7 +149,6 @@ export class TaskService implements ITaskService {
     const tag = `tag:tasks`;
 
     const keys = await this.clientRedis.smembers(tag);
-    console.log(keys);
     if (keys.length) {
       await this.clientRedis.del(...keys); // delete all keys
       await this.clientRedis.del(tag); // remove the tags set
