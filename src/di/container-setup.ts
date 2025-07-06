@@ -33,6 +33,3 @@ container.register<ICacheService>(CACHE_SERVICE, {
 });
 
 container.registerInstance('Redis', redis);
-// container.register<RedisClientType>(REDIS_CLIENT, {
-//   useValue: redisClient,
-// });
