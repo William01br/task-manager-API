@@ -10,6 +10,12 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  redis:
+    image: redis:8-alpine3.21
+    restart: always
+    ports:
+      - '6379:6379'
+
 volumes:
   mongo-data:
     driver: local

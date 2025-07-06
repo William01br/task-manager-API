@@ -32,6 +32,7 @@
   "devDependencies": {
     "@eslint/js": "^9.28.0",
     "@testcontainers/mongodb": "^11.0.3",
+    "@testcontainers/redis": "^11.0.3",
     "@types/express": "^5.0.2",
     "@types/jest": "^30.0.0",
     "@types/module-alias": "^2.0.4",
@@ -60,6 +61,7 @@
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "express-async-errors": "^3.1.1",
+    "ioredis": "^5.6.1",
     "module-alias": "^2.2.3",
     "mongoose": "^8.15.1",
     "mongoose-paginate-v2": "^1.9.1",

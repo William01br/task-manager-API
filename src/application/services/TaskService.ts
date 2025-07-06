@@ -1,7 +1,7 @@
 import { ITaskRepository } from '@src/infra/database/mongoose/repositories/ITaskRepository';
 import { ITaskService } from './ITaskService';
 import { inject, injectable } from 'tsyringe';
-import { TASK_REPOSITORY } from '@src/di/tokens';
+import { CACHE_SERVICE, TASK_REPOSITORY } from '@src/di/tokens';
 import { PaginateResult } from 'mongoose';
 import {
   Task,
@@ -12,14 +12,21 @@ import {
 } from '@src/domain/entities/Task';
 import { NotFoundError } from '@src/errors/NotFoundError';
 import { toTaskResponseDTO } from '../mappers/TaskMapper';
-
-// Aqui declaramos os casos de uso. Além disso, usamos de DIP para servir uma fábrica de objeto - nesse caso, uma simples que cria apenas Task - para validar e retornar o objeto.
+import { ICacheService } from '@src/infra/cache/redis/ICacheService';
+import Redis from 'ioredis';
 
 @injectable()
 export class TaskService implements ITaskService {
   constructor(
     @inject(TASK_REPOSITORY)
     private readonly taskRepo: ITaskRepository,
+
+    @inject(CACHE_SERVICE)
+    private readonly redis: ICacheService,
+
+    // Here, the Redis instance is used to perform specific operations.
+    @inject('Redis')
+    private readonly clientRedis: Redis,
   ) {}
 
   async create(data: TaskCreateDTO): Promise<TaskResponseDTO> {
@@ -32,6 +39,8 @@ export class TaskService implements ITaskService {
 
     const task: Task = await this.taskRepo.create(taskPreview);
 
+    await this.deletePages();
+
     return toTaskResponseDTO(task);
   }
 
@@ -39,6 +48,14 @@ export class TaskService implements ITaskService {
     page: number,
     limit: number,
   ): Promise<PaginateResult<TaskResponseDTO>> {
+    const listKey = `tasks:page:${page}:limit:${limit}`;
+    const cacheResult: PaginateResult<TaskResponseDTO> | null =
+      await this.redis.get(listKey);
+    if (cacheResult) {
+      console.log(cacheResult);
+      return cacheResult;
+    }
+
     const query: PaginateResult<Task> = await this.taskRepo.findAll(
       page,
       limit,
@@ -64,10 +81,15 @@ export class TaskService implements ITaskService {
       },
     };
 
+    await this.setPage(page, limit, result);
     return result;
   }
 
   async getById(id: string): Promise<TaskResponseDTO | null> {
+    const cacheKey = `task:${id}`;
+    const cached: TaskResponseDTO | null = await this.redis.get(cacheKey);
+    if (cached) return cached;
+
     const task: Task | null = await this.taskRepo.findById(id);
     if (!task)
       throw new NotFoundError({
@@ -77,7 +99,9 @@ export class TaskService implements ITaskService {
         },
       });
 
-    return toTaskResponseDTO(task);
+    const result = toTaskResponseDTO(task);
+    await this.redis.set(cacheKey, result);
+    return result;
   }
 
   async updateById(id: string, data: TaskUpdateDTO): Promise<TaskResponseDTO> {
@@ -90,10 +114,44 @@ export class TaskService implements ITaskService {
         },
       });
 
+    await this.redis.set(`task:${id}`, task);
+    await this.deletePages();
+
     return toTaskResponseDTO(task);
   }
 
   async delete(id: string): Promise<void> {
-    await this.taskRepo.delete(id);
+    const result = await this.taskRepo.delete(id);
+    if (result) await this.deletePages();
+  }
+
+  /**
+    The strategy for cache invalidation was group-based with Tag-based Invalidation.
+
+    - The invalidation is performed by O(N), where N is the number of keys registered in the tag set.
+    - All pages in cache are deleted imediately.
+    - About scalibility: is necessary care about much pages in cache. 
+    - In this case, was accepted trade-off because is system for one user, since is a Task-Manager.
+     */
+  private async setPage(
+    page: number,
+    limit: number,
+    data: PaginateResult<TaskResponseDTO>,
+  ): Promise<void> {
+    const key = `tasks:page:${page}:limit:${limit}`;
+    await this.clientRedis
+      .multi()
+      .set(key, JSON.stringify(data), 'EX', 60)
+      .sadd(`tag:tasks`, key)
+      .exec();
+  }
+  private async deletePages(): Promise<void> {
+    const tag = `tag:tasks`;
+
+    const keys = await this.clientRedis.smembers(tag);
+    if (keys.length) {
+      await this.clientRedis.del(...keys); // delete all keys
+      await this.clientRedis.del(tag); // remove the tags set
+    }
   }
 }

@@ -1,3 +1,4 @@
+import { connectToRedis } from './config/cache';
 import { connectToMongoose } from './config/database';
 import { SetupServer } from './server';
 
@@ -7,6 +8,7 @@ async function boostrap(): Promise<void> {
     server.init();
     server.start();
     await connectToMongoose();
+    await connectToRedis();
   } catch (error) {
     console.error('Error starting the application:', error);
     process.exit(1);
