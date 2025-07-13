@@ -10,6 +10,17 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  mongodb:
+    image: mongo:8.0-noble
+    restart: always
+    ports:
+      - '27019:27017' # host:container
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - mongo-logs:/data/db
+
   redis:
     image: redis:8-alpine3.21
     restart: always
@@ -18,4 +29,6 @@ services:
 
 volumes:
   mongo-data:
+    driver: local
+  mongo-logs:
     driver: local
