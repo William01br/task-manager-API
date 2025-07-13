@@ -52,7 +52,6 @@ export class TaskService implements ITaskService {
     const cacheResult: PaginateResult<TaskResponseDTO> | null =
       await this.redis.get(listKey);
     if (cacheResult) {
-      console.log(cacheResult);
       return cacheResult;
     }
 

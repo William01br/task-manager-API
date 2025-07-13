@@ -5,16 +5,16 @@ import { z } from 'zod';
 
 // this will load and validate all variables
 loadEnv({ path: path.resolve(__dirname, '../../.env') });
-loadEnv({ path: path.resolve(__dirname, '../../.env.test'), override: true });
+
+if (process.env.NODE_ENV === 'test')
+  loadEnv({ path: path.resolve(__dirname, '../../.env.test'), override: true });
 
 const schema = z.object({
+  NODE_ENV: z.string().nonempty(),
+
   ME_CONFIG_MONGODB_URL: z.string().nonempty().url(),
   ME_CONFIG_REDIS_URL: z.string().nonempty().url(),
   ME_CONFIG_MONGODB_URL_LOGS: z.string().nonempty().url(),
-
-  // env tests
-  TEST_CONFIG_REDIS_URL: z.string().nonempty().url(),
-  TEST_CONFIG_MONGODB_URL: z.string().nonempty().url(),
 });
 
 const parsed = schema.safeParse(process.env);

@@ -6,8 +6,10 @@ import env from '../config/env';
  * - Use Compass for check the logs.
  */
 
+const isTest = env.NODE_ENV === 'test';
+
 const logger = pino({
-  level: 'info',
+  level: isTest ? 'silent' : 'info',
   transport: {
     targets: [
       {

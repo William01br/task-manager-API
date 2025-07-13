@@ -11,11 +11,11 @@
     "lint": "eslint \"*.ts\"",
     "lint:fix": "eslint \"*.ts\" --fix",
     "prepare": "husky",
-    "test": "jest --RunInBand",
-    "test:watch": "jest --RunInBand --watch",
-    "test:unit": "jest --selectProjects unit",
-    "test:integration": "jest --detectOpenHandles --RunInBand --selectProjects integration",
-    "test:cov": "jest --coverage"
+    "test": "NODE_ENV=test jest --detectOpenHandles --RunInBand",
+    "test:watch": "NODE_ENV=test jest --RunInBand --watch",
+    "test:unit": "NODE_ENV=test jest --detectOpenHandles --selectProjects unit",
+    "test:integration": "NODE_ENV=test jest --detectOpenHandles --RunInBand --selectProjects integration",
+    "test:cov": "NODE_ENV=test jest --coverage"
   },
   "repository": {
     "type": "git",
