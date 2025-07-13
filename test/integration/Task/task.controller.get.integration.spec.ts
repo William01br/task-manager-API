@@ -11,7 +11,7 @@ describe('TaskController integration tests', () => {
       describe("when the param 'page' haven't tasks", () => {
         it("should return status 404 e error message 'Page not found'", async () => {
           const result = await global.testRequest
-            .get('/api/tasks/1/10')
+            .get('/api/tasks/1/8')
             .expect(404);
 
           expect(result.body.errors[0].message).toBe('Page not found');
@@ -76,7 +76,7 @@ describe('TaskController integration tests', () => {
     describe('when the page provided by client not have tasks', () => {
       it("should return status 404 and message 'Page not found'", async () => {
         const { body } = await global.testRequest
-          .get('/api/tasks/1/10')
+          .get('/api/tasks/1/9')
           .expect(404);
 
         expect(body.errors[0].message).toBe('Page not found');
@@ -89,7 +89,7 @@ describe('TaskController integration tests', () => {
           .mockRejectedValueOnce(new Error('fail simulation database'));
 
         const { body } = await global.testRequest
-          .get('/api/tasks/1/10')
+          .get('/api/tasks/1/7')
           .expect(500);
 
         expect(body.errors[0].message).toBe('Something went wrong');
@@ -106,7 +106,6 @@ describe('TaskController integration tests', () => {
           .get('/api/tasks/1/10')
           .expect(200);
 
-        console.log(body);
         const typedBody = body as { data: PaginateResult<TaskResponseDTO> };
 
         expect(typedBody.data.page).toBe(1);

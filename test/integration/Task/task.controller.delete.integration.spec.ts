@@ -9,7 +9,7 @@ describe('TaskController integration tests', () => {
     describe('(idempotent) when the task was deleted or not exist', () => {
       it('should return only status 204', async () => {
         const { body } = await global.testRequest
-          .post('/api/tasks')
+          .post('/api/tasks/')
           .send({
             title: 'testing',
             description: 'some text',

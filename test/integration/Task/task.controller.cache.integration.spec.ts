@@ -50,7 +50,6 @@ describe('TaskController integration tests', () => {
 
         const typedBody = body as { data: TaskResponseDTO };
         const id = typedBody.data.id;
-        console.log(id);
 
         await global.testRequest
           .patch(`/api/tasks/${id}`)
@@ -76,7 +75,6 @@ describe('TaskController integration tests', () => {
 
         const typedBody = body as { data: TaskResponseDTO };
         const id = typedBody.data.id;
-        console.log(id);
 
         await global.testRequest.get(`/api/tasks/${id}`).expect(200);
 
