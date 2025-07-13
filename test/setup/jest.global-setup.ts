@@ -1,7 +1,5 @@
 import { MongoDBContainer } from '@testcontainers/mongodb';
 import { RedisContainer } from '@testcontainers/redis';
-import { writeFileSync } from 'node:fs';
-import path from 'node:path';
 
 /**
  * Global types were declared to allow sharing values between jest.setup-global and jest.teardown—since they run in separate processes (workers).
@@ -17,19 +15,8 @@ export default async function setSetupGlobal() {
   global.testContainerMongo = await new MongoDBContainer(
     'mongo:8.0-noble',
   ).start();
-  const mongoUrl = `TEST_CONFIG_MONGODB_URL=${global.testContainerMongo.getConnectionString()}`;
 
   global.testContainerRedis = await new RedisContainer(
     'redis:8-alpine3.21',
   ).start();
-  const redisUrl = `TEST_CONFIG_REDIS_URL=${global.testContainerRedis.getConnectionUrl()}`;
-
-  setEnvs(mongoUrl, redisUrl);
-}
-
-function setEnvs(...urls: string[]) {
-  const envTestPath = path.resolve(__dirname, '../../.env.test');
-  const newUrls = urls.join(', ').replace(', ', '\n');
-  console.log(newUrls);
-  writeFileSync(envTestPath, newUrls, { encoding: 'utf-8' });
 }

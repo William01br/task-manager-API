@@ -5,7 +5,6 @@ import mongoose from 'mongoose';
 import Redis from 'ioredis';
 
 import { SetupServer } from '@src/server';
-import env from '@src/config/env';
 
 const SIXTY_SECONDS = 60 * 1000;
 
@@ -15,12 +14,12 @@ let server: SetupServer;
 
 beforeAll(async () => {
   try {
-    await mongoose.connect(env.TEST_CONFIG_MONGODB_URL, {
+    await mongoose.connect(global.testContainerMongo.getConnectionString(), {
       directConnection: true,
     });
     mongo = mongoose.connection;
 
-    redis = new Redis(env.TEST_CONFIG_REDIS_URL);
+    redis = new Redis(global.testContainerRedis.getConnectionUrl());
 
     server = new SetupServer();
     server.init();
