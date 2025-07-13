@@ -10,6 +10,7 @@ loadEnv({ path: path.resolve(__dirname, '../../.env.test'), override: true });
 const schema = z.object({
   ME_CONFIG_MONGODB_URL: z.string().nonempty().url(),
   ME_CONFIG_REDIS_URL: z.string().nonempty().url(),
+  ME_CONFIG_MONGODB_URL_LOGS: z.string().nonempty().url(),
 
   // env tests
   TEST_CONFIG_REDIS_URL: z.string().nonempty().url(),
