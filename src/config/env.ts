@@ -7,7 +7,10 @@ import { z } from 'zod';
 loadEnv({ path: path.resolve(__dirname, '../../.env') });
 
 if (process.env.NODE_ENV === 'test')
-  loadEnv({ path: path.resolve(__dirname, '../../.env.test'), override: true });
+  loadEnv({
+    path: path.resolve(__dirname, '../../.env.test.local'),
+    override: true,
+  });
 
 const schema = z.object({
   NODE_ENV: z.string().nonempty(),

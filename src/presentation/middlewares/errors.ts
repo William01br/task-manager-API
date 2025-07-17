@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { CustomError } from '@src/errors/CustomError';
-import { NotFoundError } from '@src/errors/NotFoundError';
+// import { NotFoundError } from '@src/errors/NotFoundError';
 import logger from '@src/logging/logger';
+// import { reset } from 'module-alias';
 
 export const errorHandler = (
   err: Error,
@@ -32,9 +33,11 @@ export const errorHandler = (
   return;
 };
 
-export const NotFoundHandler = () => {
-  throw new NotFoundError({
-    message: 'Not found',
-    logging: true,
-  });
+export const NotFoundHandler = (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  res.status(404).json({ message: 'Route not found' });
+  return;
 };
