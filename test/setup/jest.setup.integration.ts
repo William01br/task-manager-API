@@ -1,50 +1,35 @@
 import 'reflect-metadata';
-import http from 'node:http';
-import supertest from 'supertest';
+
 import mongoose from 'mongoose';
 import Redis from 'ioredis';
-
+import request from 'supertest';
 import { SetupServer } from '@src/server';
-import env from '@src/config/env';
-
-const SIXTY_SECONDS = 60 * 1000;
 
 let redis: Redis;
-let mongo: mongoose.Connection;
-let server: SetupServer;
 
 beforeAll(async () => {
-  try {
-    await mongoose.connect(env.TEST_CONFIG_MONGODB_URL, {
-      directConnection: true,
-    });
-    mongo = mongoose.connection;
+  const server = new SetupServer();
+  server.init();
 
-    redis = new Redis(env.TEST_CONFIG_REDIS_URL);
+  global.testRequest = request(server.getApp());
 
-    server = new SetupServer();
-    server.init();
-    global.testRequest = supertest(server.getApp());
-  } catch (error) {
-    console.log(error);
-    process.exit(1);
-  }
-}, SIXTY_SECONDS);
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const id = process.env.JEST_WORKER_ID!;
+  console.log(id);
+  const dbName = `testdb_${id}`;
+  await mongoose.connect(`${String(process.env.TEST_MONGODB_URL)}/${dbName}`, {
+    directConnection: true,
+  });
+
+  redis = new Redis(String(process.env.TEST_REDIS_URL));
+}, 10000);
 
 afterAll(async () => {
-  redis.disconnect();
-  await mongo.destroy();
-  http.globalAgent.destroy();
+  await redis.quit();
+  await mongoose.connection.close();
 });
 
 beforeEach(async () => {
   await redis.flushdb();
-  await clearMongo();
+  await mongoose.connection.db?.dropDatabase();
 });
-
-async function clearMongo(): Promise<void> {
-  const collections = Object.values(mongo.collections);
-  for (const coll of collections) {
-    await coll.deleteMany({});
-  }
-}

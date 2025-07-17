@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { CustomError } from '@src/errors/CustomError';
-import { NotFoundError } from '@src/errors/NotFoundError';
+// import { NotFoundError } from '@src/errors/NotFoundError';
+import logger from '@src/logging/logger';
+// import { reset } from 'module-alias';
 
 export const errorHandler = (
   err: Error,
@@ -11,7 +13,7 @@ export const errorHandler = (
   if (err instanceof CustomError) {
     const { statusCode, errors, logging } = err;
     if (logging) {
-      console.error(
+      logger.warn(
         JSON.stringify(
           {
             code: err.statusCode,
@@ -26,13 +28,16 @@ export const errorHandler = (
     res.status(statusCode).json({ errors });
     return;
   }
-  console.error(JSON.stringify(err, null, 2), err.stack);
+  logger.error(JSON.stringify(err, null, 2), err.stack);
   res.status(500).json({ errors: [{ message: 'Something went wrong' }] });
   return;
 };
 
-export const NotFoundHandler = () => {
-  throw new NotFoundError({
-    message: 'Not found',
-  });
+export const NotFoundHandler = (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  res.status(404).json({ message: 'Route not found' });
+  return;
 };

@@ -1,6 +1,16 @@
 import type { Config } from 'jest';
 import path from 'node:path';
 
+/**
+   - There are asynchronous handlers left open, and I can’t close these operations.
+
+   - The issue occurs in the GET handler of task.controller.get.integration.spec.ts, specifically in the routes that return a 404 status code.
+
+   - The Supertest library throws an error, and I’m not sure how to fix it.
+
+   - In theory, Supertest should close all connections it opens, but in this particular scenario it doesn’t.
+   */
+
 const root = path.join(__dirname);
 const moduleNameMapper = {
   '^@src/(.*)$': '<rootDir>/src/$1',
@@ -28,7 +38,6 @@ const integrationConfig: Config = {
   rootDir: root,
   testMatch: ['<rootDir>/test/integration/**/*integration.spec.ts'],
   globalSetup: '<rootDir>/test/setup/jest.global-setup.ts',
-  globalTeardown: '<rootDir>/test/setup/jest.teardown.ts',
   setupFilesAfterEnv: ['<rootDir>/test/setup/jest.setup.integration.ts'],
   moduleNameMapper: moduleNameMapper,
   collectCoverageFrom: ['<rootDir>/test/integration/**/*integration.spec.ts'],

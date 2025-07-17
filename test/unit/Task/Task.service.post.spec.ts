@@ -37,7 +37,7 @@ describe('class Task Service', () => {
 
     taskRepoMock = createTaskRepoMock();
     mockCacheService = createCacheServiceMock();
-    redisInstance = new Redis();
+    redisInstance = new Redis({ lazyConnect: true });
     taskService = new TaskService(
       taskRepoMock,
       mockCacheService,

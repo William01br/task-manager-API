@@ -1,35 +1,34 @@
+import path from 'node:path';
+import { writeFileSync } from 'node:fs';
+
+import { config as loadEnv } from 'dotenv';
 import { MongoDBContainer } from '@testcontainers/mongodb';
 import { RedisContainer } from '@testcontainers/redis';
-import { writeFileSync } from 'node:fs';
-import path from 'node:path';
+
+loadEnv({
+  path: path.resolve(__dirname, '../../.env.test.local'),
+  override: true,
+});
 
 /**
- * Global types were declared to allow sharing values between jest.setup-global and jest.teardown—since they run in separate processes (workers).
-  1. We declared the global variables in globals.d.ts (performing a declaration merge on NodeJS.Global).
-  2. In the setup file, we assigned global.testContainerX to the instance returned by new MongoDBContainer().start() (and similarly for Redis).
-  3. In the teardown file, we called await global.testContainerX.stop() to shut down each container.
-
-  why this? 
-  Jest spawns separate worker processes for each test file, so you can’t share variables across files by default.
+ * In Jest's global setup, we automatically start the MongoDB and Redis containers
+ * using Testcontainers - they already come with `autoremove: true`, so there's no need to invoke `.stop()` on teardown.
+ *
+ * The generated connection URLs are written to `.env.test.local`, which is read from `jest.setup.integration.ts` to configure Mongoose and Redis.
  */
 
 export default async function setSetupGlobal() {
-  global.testContainerMongo = await new MongoDBContainer(
-    'mongo:8.0-noble',
-  ).start();
-  const mongoUrl = `TEST_CONFIG_MONGODB_URL=${global.testContainerMongo.getConnectionString()}`;
+  const mongoContainer = await new MongoDBContainer('mongo:8.0-noble').start();
+  const redisContainer = await new RedisContainer('redis:8-alpine3.21').start();
 
-  global.testContainerRedis = await new RedisContainer(
-    'redis:8-alpine3.21',
-  ).start();
-  const redisUrl = `TEST_CONFIG_REDIS_URL=${global.testContainerRedis.getConnectionUrl()}`;
-
-  setEnvs(mongoUrl, redisUrl);
+  const envMongoUrl = `TEST_MONGODB_URL=${mongoContainer.getConnectionString()}`;
+  const envRedisUrl = `TEST_REDIS_URL=${redisContainer.getConnectionUrl()}`;
+  setUrls(`NODE_ENV=test`, envMongoUrl, envRedisUrl);
 }
 
-function setEnvs(...urls: string[]) {
-  const envTestPath = path.resolve(__dirname, '../../.env.test');
-  const newUrls = urls.join(', ').replace(', ', '\n');
-  console.log(newUrls);
-  writeFileSync(envTestPath, newUrls, { encoding: 'utf-8' });
+function setUrls(...urls: string[]): void {
+  const formatedUrls = urls.join(', ').replace(/, /g, '\n');
+  console.log(formatedUrls);
+  const pathEnv = path.resolve(__dirname, '..', '..', '.env.test.local');
+  writeFileSync(pathEnv, formatedUrls);
 }

@@ -11,6 +11,8 @@ import {
   errorHandler,
   NotFoundHandler,
 } from './presentation/middlewares/errors';
+import PinoHttp from 'pino-http';
+import logger from './logging/logger';
 
 export class SetupServer extends Server {
   // eslint-disable-next-line @typescript-eslint/no-useless-constructor
@@ -27,6 +29,7 @@ export class SetupServer extends Server {
   private setupExpress(): void {
     this.app.use(bodyParser.json());
     this.app.set('json spaces', 2);
+    this.app.use(PinoHttp({ logger }));
   }
 
   private setupControllers(): void {
@@ -42,7 +45,7 @@ export class SetupServer extends Server {
 
   public start(port = 3000) {
     this.app.listen(port, () => {
-      console.log(`Server listening on port: ${port}`);
+      logger.info(`Server listening on port: ${port}`);
     });
   }
 

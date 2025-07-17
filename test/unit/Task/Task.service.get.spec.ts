@@ -35,13 +35,16 @@ describe('class Task Service', () => {
   beforeEach(() => {
     taskRepoMock = createTaskRepoMock();
     mockCacheService = createCacheServiceMock();
-    redisInstance = new Redis();
+    redisInstance = new Redis({ lazyConnect: true });
     taskService = new TaskService(
       taskRepoMock,
       mockCacheService,
       redisInstance,
     );
     id = defaultTask.id;
+  });
+  afterAll(() => {
+    redisInstance.disconnect();
   });
   describe('getById', () => {
     it('should return should return valid taskResponseDTO', async () => {
